@@ -1,0 +1,11 @@
+/*main.css*/
+
+body {
+    margin: 0px;
+    height: 100vh;
+
+}
+
+#webgl {
+    display: block;
+}
