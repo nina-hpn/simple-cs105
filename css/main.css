@@ -2,10 +2,55 @@
 
 body {
     margin: 0px;
-    height: 100vh;
+    height: 90vh;
 
 }
 
 #webgl {
     display: block;
+    z-index: 1;
+}
+
+.gui {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    background-color: 'pink';
+    z-index: 2;
+}
+
+.title {
+    font-size: 1.3rem;
+    font-weight: bold;
+    font-family: serif; 
+}
+
+.property-name {
+    font-size: .9rem;
+}
+
+#auxiliary {
+    position: absolute;
+    top: 2px;
+    right: 40%;
+    left: 40%;
+    text-align: center;
+    color: white;
+    opacity: 40%;
+    z-index: 2;
+}
+
+#auxiliary > a {
+    text-decoration: none;
+    color: white;
+}
+#auxiliary > a:hover {
+    text-decoration: underline;
+    color: pink;
+} 
+
+#side {
+    z-index: 2;
+    position: fixed;
+    top: 0px;
 }

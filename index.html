@@ -11,29 +11,144 @@
 
         <meta charset = 'UTF-8'>
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
 
         <!-- Stylesheet -->
         <link rel="stylesheet" href='css/main.css'>
 
         <!--CDN-->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
         <!-- Threejs -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r79/three.js"></script>
         
-        <!-- OrbitControls -->
-        <script src="https://82mou.github.io/threejs/js/OrbitControls.js"></script>
         <!-- Jquery -->
-        <script
-        src="https://code.jquery.com/jquery-3.6.0.js"
-        integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
-        crossorigin="anonymous"></script>
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
         
         <!-- Libs import -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    
+    
     </head>
     
     <body>
-        <div id='webgl'>
+        <div class='gui'></div>
+        <div id='auxiliary'></div>
+        <div id='webgl' class='w-100 h-100 position-fixed'>
             <script type='module' src='./index.js'></script>
+        </div>
+        <div id='side' class='wrapper d-flex align-items-stretch'>
+            <nav id='sidebar'>
+                <div class='custom-menu'>
+                    <button id='sidebarCollapse' class='btn btn-dark'>
+                        <i class='fa fa-bars'></i>
+                        <span class='sr-only'>Open Menu</span>
+                    </button>
+                </div>
+                <div class='p-4 pt-5'>
+                    <ul class='list-unstyled components mb-5'> 
+                        <li data-toggle="collapse" aria-expanded="false">
+                            <input type='checkbox' id='plane' value='plane' name='plane' onchange="displayPlane()"/>
+                            <label for='plane'>Plane</label>
+                        </li>
+                        <li>
+                            <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false"
+                                class="dropdown-toggle">Geometry</a>
+                            <ul class="collapse list-unstyled" id="homeSubmenu">
+                                <li>
+                                    <a href="#" onclick="renderGeometry('box');">Cube</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="renderGeometry('sphere');">Sphere</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="renderGeometry('cone');">Cone</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="renderGeometry('cylinder');">Cylinder</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="renderGeometry('torus');">Torus</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="renderGeometry('tea-pot');">Teapot</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="renderGeometry('icosa');">Icosahedron</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="renderGeometry('dode');">Dodecahedron</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="renderGeometry('octa');">Octahedron</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="renderGeometry('tetra');">Tetrahedron</a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <a href="#pageSubmenu" data-toggle="collapse" aria-expanded="false"
+                                class="dropdown-toggle">Surface</a>
+                            <ul class="collapse list-unstyled" id="pageSubmenu">
+                                <li>
+                                    <a href="#" onclick="SetMaterial(1);">Point</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="SetMaterial(2);">Line</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="SetMaterial(3);">Solid</a>
+                                </li>
+                                <li>
+                                    <input type="file" accept="image/*" id="texture" style="display: none;"
+                                        onchange="SetTexture(window.URL.createObjectURL(this.files[0]))" />
+                                    <a href="#" name="button" onclick="Uploadimage();">Texture</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            <a href="#lightSubmenu" data-toggle="collapse" aria-expanded="false"
+                                class="dropdown-toggle">Light</a>
+                            <ul class="collapse list-unstyled" id="lightSubmenu">
+                                <li>
+                                    <a href="#" onclick="setPointLight()">Light</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="removeLight()">Remove Light</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            <a href="#animationSubmenu" data-toggle="collapse" aria-expanded="false"
+                                class="dropdown-toggle">Animation</a>
+                            <ul class="collapse list-unstyled" id="animationSubmenu">
+                                <li class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="animation1">
+                                    <label class="custom-control-label" for="animation1">Animation 1: rotate x</label>
+                                </li>
+                                <li class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="animation2">
+                                    <label class="custom-control-label" for="animation2">Animation 2: rotate y</label>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="Animation3()">Animation 3</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="Animation4()">Animation 4</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="ResetAnimation()">Remove Animation</a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                
+                </div>
+            </nav>
         </div>
     </body>
 </html>

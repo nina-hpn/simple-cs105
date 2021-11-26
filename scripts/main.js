@@ -1,5 +1,4 @@
 //main.js
-
 (function($) {
 
 	"use strict";
@@ -15,8 +14,9 @@
 	fullHeight();
 
 	$('#sidebarCollapse').on('click', function () {
-      $('#sidebar').toggleClass('active');
-  });
+		$('#sidebar').toggleClass('active');
+	});
+
 
 })(jQuery);
 
