@@ -95,13 +95,13 @@
                                 class="dropdown-toggle">Surface</a>
                             <ul class="collapse list-unstyled" id="pageSubmenu">
                                 <li>
-                                    <a href="#" onclick="SetMaterial(1);">Point</a>
+                                    <a href="#" onclick="setMaterial('point');">Point</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="SetMaterial(2);">Line</a>
+                                    <a href="#" onclick="setMaterial('basic');">Basic</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="SetMaterial(3);">Solid</a>
+                                    <a href="#" onclick="setMaterial('phong');">Phong</a>
                                 </li>
                                 <li>
                                     <input type="file" accept="image/*" id="texture" style="display: none;"
@@ -139,6 +139,30 @@
                                 </li>
                                 <li>
                                     <a href="#" onclick="Animation4()">Animation 4</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="ResetAnimation()">Remove Animation</a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <a href="#animationSubmenu" data-toggle="collapse" aria-expanded="false"
+                                class="dropdown-toggle">Camera Effects</a>
+                            <ul class="collapse list-unstyled" id="cameranSubmenu">
+                                <li class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="cameraAnimation1">
+                                    <label class="custom-control-label" for="animation1">Animation 1: rotate x</label>
+                                </li>
+                                <li class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="cameraAnimation2">
+                                    <label class="custom-control-label" for="animation2">Animation 2: rotate y</label>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="CameraAnimation3()">Animation 3</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="CameraAnimation4()">Animation 4</a>
                                 </li>
                                 <li>
                                     <a href="#" onclick="ResetAnimation()">Remove Animation</a>

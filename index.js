@@ -6,6 +6,12 @@ import * as THREE from './scripts/libs/three.module.js'
 import { OrbitControls } from './scripts/libs/OrbitControls.js';
 
 
+//Note things that we want to do
+//Making difference camera affects
+//Modified scene color
+// Creating more geometry
+//Set Material is having abit of a problem
+
 //Define text on header;
 var text = 'This is SIMPLE - Final Project'
 addTexttoHeader(text, 'auxiliary');
