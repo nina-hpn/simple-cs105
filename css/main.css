@@ -6,6 +6,10 @@ body {
 
 }
 
+html {
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 #webgl {
     display: block;
     z-index: 1;
@@ -20,9 +24,9 @@ body {
 }
 
 .title {
-    font-size: 1.3rem;
+    font-size: 1rem;
     font-weight: bold;
-    font-family: serif; 
+    font-family: 'Merriweather', serif; 
 }
 
 .property-name {

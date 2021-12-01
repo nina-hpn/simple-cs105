@@ -16,12 +16,15 @@ import { OrbitControls } from './scripts/libs/OrbitControls.js';
 var text = 'This is SIMPLE - Final Project'
 addTexttoHeader(text, 'auxiliary');
 
+var canvas = document.getElementById('webgl');
+
 
 //Define basic scene objs
 var scene, camera, renderer;
 var mesh, texture;
 var material = new THREE.MeshBasicMaterial({color: 0xffffff});
 var planeMaterial;
+
 material.needsUpdate = true;
 
 //Define gui and controls elements
@@ -37,10 +40,10 @@ const gui = new GUI( { autoPlace: false } );
 var control, orbit, gridHelper;
 var mouse = new THREE.Vector2();
 
-var planeFolder, objectFolder;
+var planeFolder, objectFolder, AMBLightFolder;
 
 //All about the lights
-var raycaster, PointLightHelper, meshPlane, light;
+var raycaster, PointLightHelper, meshPlane, light, ambientLight;;
 
 //Define basic Gemetry
 
@@ -94,10 +97,15 @@ function init() {
 
 
 
-    document.getElementById('webgl').appendChild(renderer.domElement);
+    canvas.appendChild(renderer.domElement);
+    //canvas.addEventListener('mousedown', onMouseDown, false);
 }
 
 function render() {
+
+    // update the picking ray with the camera and mouse position
+    raycaster.setFromCamera( mouse, camera );
+
     renderer.render(scene, camera);
 }
 
@@ -191,10 +199,7 @@ window.setMaterial = function(mat='phong', color=0xffffff, size=0.5, wireframe=t
                 break;
 
             case 'phong':
-                if (!light) 
-                    material = new THREE.MeshBasicMaterial({ color: color });
-                else
-                    material = new THREE.MeshPhongMaterial({color: color});
+                material = new THREE.MeshPhongMaterial({color: color});
                 break;
 
             case 'lambert':
@@ -208,6 +213,8 @@ window.setMaterial = function(mat='phong', color=0xffffff, size=0.5, wireframe=t
 
         }
         mesh = new THREE.Mesh(dummy_mesh.geometry, material);
+        mesh.castShadow= true;
+        mesh.receiveShadow = true;
         CloneMesh(dummy_mesh);
     }
     render();
@@ -291,7 +298,7 @@ window.displayPlane = function() {
     if(checked) {
         console.log('checked');
         //Adding Plane to current env
-        planeMaterial = new THREE.MeshBasicMaterial(params);
+        planeMaterial = new THREE.MeshPhongMaterial(params);
         meshPlane = new THREE.Mesh(PlaneGeometry, planeMaterial);
         meshPlane.name = 'plane'
         scene.add(meshPlane);
@@ -399,15 +406,60 @@ window.setPointLight= function() {
         PointLightHelper = new THREE.PointLightHelper(light);
         PointLightHelper.name = 'light-helper';
         scene.add(PointLightHelper);
+
         render();
     }
 
 }
 
-window.RemoveLight = function() {
+window.removeLight = function() {
+    if(control.object) {
+        if(control.object.name == 'light')
+            control.object = mesh;
+    }
     scene.remove(light);
     scene.remove(PointLightHelper);
 
     render();
 }
 
+//Ambient Light
+var AMBDefault = {
+    color: 0x404040,
+}
+function createAmbientLight(color=0x404040, intensity=5) {
+    var name = 'ambient-light'; 
+    ambientLight = new THREE.AmbientLight(color, intensity);
+    ambientLight.name = name;
+    return ambientLight
+}
+
+window.setAmbientLight = function() {
+    ambientLight = createAmbientLight();
+    scene.add(ambientLight);
+
+    AMBLightFolder = gui.addFolder('Ambient Light');
+    AMBLightFolder.addColor( AMBDefault, 'color')
+        .onChange( function() {
+            ambientLight.color.set(new THREE.Color(AMBDefault.color));
+        })
+}
+
+window.removeAmbientLight = function() {
+    gui.removeFolder(AMBLightFolder);
+    scene.remove(ambientLight);
+}
+
+window.displayAmbient = function() {
+    var checked = document.querySelector('input[id="ambient"]:checked');
+    if(checked) {
+        console.log('Turn on ambient');
+        setAmbientLight();
+    }
+    else {
+        console.log("Turn off ambient");
+        removeAmbientLight();
+    }
+}
+
+window.requestAnimationFrame(render);

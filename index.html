@@ -19,6 +19,11 @@
         <!--CDN-->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
+        <!-- Font import -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+
         <!-- Threejs -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r79/three.js"></script>
         
@@ -50,8 +55,12 @@
                 <div class='p-4 pt-5'>
                     <ul class='list-unstyled components mb-5'> 
                         <li data-toggle="collapse" aria-expanded="false">
-                            <input type='checkbox' id='plane' value='plane' name='plane' onchange="displayPlane()"/>
+                            <input type='checkbox'  id='plane' value='plane' name='plane' onchange="displayPlane()"/>
                             <label for='plane'>Plane</label>
+                        </li>
+                        <li data-toggle="collapse" aria-expanded="false">
+                            <input type='checkbox' id='ambient' value='ambient' name='ambient' onchange="displayAmbient()"/>
+                            <label for='ambient'>Ambient Light</label>
                         </li>
                         <li>
                             <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false"
@@ -103,11 +112,11 @@
                                 <li>
                                     <a href="#" onclick="setMaterial('phong');">Phong</a>
                                 </li>
-                                <li>
+                                <!-- <li>
                                     <input type="file" accept="image/*" id="texture" style="display: none;"
                                         onchange="SetTexture(window.URL.createObjectURL(this.files[0]))" />
                                     <a href="#" name="button" onclick="Uploadimage();">Texture</a>
-                                </li>
+                                </li> -->
                             </ul>
                         </li>
                         <li>
