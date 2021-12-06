@@ -1,5 +1,9 @@
 /*main.css*/
 
+:root {
+    --blue: #05c7f2
+}
+
 body {
     margin: 0px;
     height: 90vh;
@@ -53,8 +57,209 @@ html {
     color: pink;
 } 
 
+/* Side nav */
+
+  
+#sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    background: var(--blue);
+    color: #fff;
+    -webkit-transition: all 0.3s;
+    -o-transition: all 0.3s;
+    transition: all 0.3s;
+    position: relative; 
+}
+#sidebar .h6 {
+    color: #fff; 
+}
+
+#sidebar.active {
+    margin-left: -250px; 
+}
+
+#sidebar.active .custom-menu {
+    margin-right: -50px; 
+}
+
+#sidebar h1 {
+    margin-bottom: 20px;
+    font-weight: 700; 
+}
+
+#sidebar h1 .logo {
+    color: #fff; 
+}
+
+#sidebar ul.components {
+    padding: 0; 
+}
+
+#sidebar ul li {
+    font-size: 16px; 
+}
+#sidebar ul li > ul {
+    margin-left: 10px; 
+}
+#sidebar ul li > ul li {
+        font-size: 14px; 
+}
+
+#sidebar ul li a {
+    padding: 10px 0;
+    display: block;
+    color: rgba(255, 255, 255, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+}
+#sidebar ul li a:hover {
+        color: #fff; 
+}
+
+#sidebar ul li.active > a {
+    background: transparent;
+    color: #fff; 
+}
+
+@media (max-width: 991.98px) {
+    #sidebar {
+    margin-left: -250px; 
+    }
+    #sidebar.active {
+        margin-left: 0; 
+    }
+    #sidebar .custom-menu {
+        margin-right: -50px !important;
+        top: 10px !important; 
+    } 
+}
+#sidebar .custom-menu {
+    display: inline-block;
+    position: absolute;
+    top: 20px;
+    right: 0;
+    margin-right: -20px;
+    -webkit-transition: 0.3s;
+    -o-transition: 0.3s;
+    transition: 0.3s; 
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #sidebar .custom-menu {
+        -webkit-transition: none;
+        -o-transition: none;
+        transition: none; 
+    } 
+
+}
+#sidebar .custom-menu .btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%; 
+}
+#sidebar .custom-menu .btn.btn-primary {
+    background: var(--blue);
+    border-color: var(--blue); 
+}
+#sidebar .custom-menu .btn.btn-primary:hover, #sidebar .custom-menu .btn.btn-primary:focus {
+    background: var(--blue) !important;
+    border-color: var(--blue) !important; 
+}
+
+a[data-toggle="collapse"] {
+    position: relative; 
+}
+
+.dropdown-toggle::after {
+    display: block;
+    position: absolute;
+    top: 50%;
+    right: 0;
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%); 
+}
+
+@media (max-width: 991.98px) {
+    #sidebarCollapse span {
+        display: none; 
+    } 
+}
+
 #side {
     z-index: 2;
     position: fixed;
     top: 0px;
+}
+
+.d-flex {
+    display: -webkit-box !important;
+    display: -ms-flexbox !important;
+    display: flex !important; 
+}
+
+.align-items-stretch {
+    -webkit-box-align: stretch !important;
+    -ms-flex-align: stretch !important;
+    align-items: stretch !important; 
+}
+
+.p-4 {
+    padding: 1.5rem !important; 
+}
+
+.pt-5,
+.py-5 {
+  padding-top: 3rem !important; 
+}
+
+.list-unstyled {
+padding-left: 0;
+list-style: none; 
+}
+
+#sidebar ul.components {
+    padding: 0; 
+}
+
+.mb-5,
+.my-5 {
+  margin-bottom: 3rem !important; 
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0; 
+}
+  
+/* .sr-only-focusable:active, .sr-only-focusable:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: normal; 
+} */
+
+.noselect{
+    -webkit-touch-callout: none; /* iOS Safari */
+          -webkit-user-select: none; /* Safari */
+           -khtml-user-select: none; /* Konqueror HTML */
+             -moz-user-select: none; /* Old versions of Firefox */
+              -ms-user-select: none; /* Internet Explorer/Edge */
+                  user-select: none; /* Non-prefixed version, currently
+                                        supported by Chrome, Edge, Opera and Firefox */
+}
+
+#insertedText {
+    width: 50%;
+}
+
+label {
+    color: rgba(255, 255, 255, 0.7);
 }

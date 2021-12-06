@@ -22,10 +22,9 @@
         <!-- Font import -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
-
+        <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Raleway:wght@300;500;700&display=swap" rel="stylesheet">
         <!-- Threejs -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r79/three.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r79/three.js"></script>        
         
         <!-- Jquery -->
         <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
@@ -34,7 +33,8 @@
         <!-- Libs import -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-    
+        <script src="https://cdn.jsdelivr.net/npm/giojs@2.2.1/build/gio.min.js"></script>
+        
     
     </head>
     
@@ -44,7 +44,7 @@
         <div id='webgl' class='w-100 h-100 position-fixed'>
             <script type='module' src='./index.js'></script>
         </div>
-        <div id='side' class='wrapper d-flex align-items-stretch'>
+        <div id='side' class='wrapper d-flex align-items-stretch noselect'>
             <nav id='sidebar'>
                 <div class='custom-menu'>
                     <button id='sidebarCollapse' class='btn btn-dark'>
@@ -54,6 +54,9 @@
                 </div>
                 <div class='p-4 pt-5'>
                     <ul class='list-unstyled components mb-5'> 
+                        <li data-toggle="collapse" aria-expanded="false" id='obj-control'>
+                            
+                        </li>
                         <li data-toggle="collapse" aria-expanded="false">
                             <input type='checkbox'  id='plane' value='plane' name='plane' onchange="displayPlane()"/>
                             <label for='plane'>Plane</label>
@@ -96,6 +99,17 @@
                                 <li>
                                     <a href="#" onclick="renderGeometry('tetra');">Tetrahedron</a>
                                 </li>
+                                <li>
+                                    <a href="#" onclick="renderGeometry('circle');">Circle</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="renderGeometry('ring');">Ring</a>
+                                </li>
+                                <li>
+                                    <label for='insertedText'>Text Geometry</label>
+                                    <br>
+                                    <input type='text' id='insertedText' /> <button class='dark' onclick="renderGeometry('text');">Create</button>
+                                </li>
                             </ul>
                         </li>
 
@@ -107,10 +121,13 @@
                                     <a href="#" onclick="setMaterial('point');">Point</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="setMaterial('basic');">Basic</a>
+                                    <a href="#" onclick="setMaterial('basic');">Wireframe</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="setMaterial('phong');">Phong</a>
+                                    <a href="#" onclick="setMaterial('line');">Lines</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="setMaterial('phong');">Solid</a>
                                 </li>
                                 <!-- <li>
                                     <input type="file" accept="image/*" id="texture" style="display: none;"
@@ -156,9 +173,9 @@
                         </li>
 
                         <li>
-                            <a href="#animationSubmenu" data-toggle="collapse" aria-expanded="false"
+                            <a href="#cameraSubmenu" data-toggle="collapse" aria-expanded="false"
                                 class="dropdown-toggle">Camera Effects</a>
-                            <ul class="collapse list-unstyled" id="cameranSubmenu">
+                            <ul class="collapse list-unstyled" id="cameraSubmenu">
                                 <li class="custom-control custom-checkbox">
                                     <input type="checkbox" class="custom-control-input" id="cameraAnimation1">
                                     <label class="custom-control-label" for="animation1">Animation 1: rotate x</label>

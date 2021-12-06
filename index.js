@@ -4,11 +4,12 @@ import { TransformControls } from './scripts/libs/TransformControls.js';
 import { TeapotBufferGeometry } from './scripts/libs/TeapotBufferGeometry.js'
 import * as THREE from './scripts/libs/three.module.js'
 import { OrbitControls } from './scripts/libs/OrbitControls.js';
-
+import { Roboto } from './scripts/libs/TextGeometry.js';
+//import { BellBold } from './scripts/libs/TextGeometry.js';
 
 //Note things that we want to do
 //Making difference camera affects
-//Modified scene color
+// Modified scene color
 // Creating more geometry
 //Set Material is having abit of a problem
 
@@ -17,6 +18,7 @@ var text = 'This is SIMPLE - Final Project'
 addTexttoHeader(text, 'auxiliary');
 
 var canvas = document.getElementById('webgl');
+var controller = new GIO.Controller( canvas );
 
 
 //Define basic scene objs
@@ -49,6 +51,7 @@ var raycaster, PointLightHelper, meshPlane, light, ambientLight;;
 
 var type_material;
 
+
 var BoxGeometry = new THREE.BoxGeometry(30, 30, 30, 40, 40, 40);
 var SphereGeometry = new THREE.SphereGeometry(20, 20, 20);
 var ConeGeometry = new THREE.ConeGeometry(18, 30, 32, 20);
@@ -59,7 +62,12 @@ var DodecahedronGeometry = new THREE.DodecahedronBufferGeometry(25);
 var IcosahedronGeometry = new THREE.IcosahedronBufferGeometry(25);
 var OctahedronGeometry =  new THREE.OctahedronBufferGeometry(25);
 var TetrahedronGeometry = new THREE.TetrahedronBufferGeometry(25);
-var PlaneGeometry = new THREE.PlaneBufferGeometry(50, 50);
+var PlaneGeometry = new THREE.PlaneBufferGeometry(80, 80);
+var CircleGeometry = new THREE.CircleGeometry(80,80);
+var RingGeometry = new THREE.RingGeometry(80,80);
+var TextGeometry;
+
+
 
 init();
 render();
@@ -98,6 +106,7 @@ function init() {
 
 
     canvas.appendChild(renderer.domElement);
+
     //canvas.addEventListener('mousedown', onMouseDown, false);
 }
 
@@ -198,6 +207,17 @@ window.setMaterial = function(mat='phong', color=0xffffff, size=0.5, wireframe=t
                 material = new THREE.MeshBasicMaterial({ color: color, wireframe: wireframe});
                 break;
 
+            case 'line':
+                material = new THREE.LineBasicMaterial( {
+                    color: color,
+                    linewidth: 1,
+                    linecap: 'round',
+                    linejoin: 'round'
+                });
+                break;
+            case 'normal':
+                material = new THREE.MeshNormalMaterial({ color: color});
+
             case 'phong':
                 material = new THREE.MeshPhongMaterial({color: color});
                 break;
@@ -231,6 +251,30 @@ window.setTexture = function(url='./graphics/textures/wood-walnut.jpg') {
 
 var obj_params = {
     color: 0xffffff
+}
+let size= 80,
+    height= 80,
+    curveSegments= 6,
+    bevelEnabled= true,
+    bevelThickness= 0.03,
+    bevelSize= 0.02,
+    bevelOffset= 0,
+    bevelSegments= 4;
+
+function createTextGeometry() {
+    var text = document.getElementById('insertedText').value;
+    TextGeometry = new THREE.TextBufferGeometry( text, {
+        font: Roboto.regular,
+        size: size,
+        height: height,
+        curveSegments: curveSegments,
+
+        bevelThickness: bevelThickness,
+        bevelSize: bevelSize,
+        bevelEnabled: bevelEnabled
+    })
+    TextGeometry.computeBoundingBox();
+    return TextGeometry;
 }
 
 window.renderGeometry= function(id) {
@@ -271,6 +315,19 @@ window.renderGeometry= function(id) {
 		case 'tetra':
 			mesh = new THREE.Mesh(TetrahedronGeometry, material);
 			break;
+        case 'circle':
+            mesh = new THREE.Mesh(CircleGeometry, material);
+			break;
+        case 'ring':
+            mesh = new THREE.Mesh(RingGeometry, material);
+			break;
+        case 'text':
+            TextGeometry = createTextGeometry();
+            mesh = new THREE.Mesh(TextGeometry, material);
+            console.log(mesh)
+			break;
+        case 'tree':
+            mesh = new THREE.Mesh(TreeGeometry, material);
         default:
             mesh = new THREE.Mesh(BoxGeometry, material);
             break;
@@ -299,7 +356,11 @@ window.displayPlane = function() {
         console.log('checked');
         //Adding Plane to current env
         planeMaterial = new THREE.MeshPhongMaterial(params);
+        planeMaterial.side = THREE.DoubleSide;
         meshPlane = new THREE.Mesh(PlaneGeometry, planeMaterial);
+
+        meshPlane.rotation.x = Math.PI / 2;
+        meshPlane.position.y = -30
         meshPlane.name = 'plane'
         scene.add(meshPlane);
         control_transform(meshPlane);
@@ -311,6 +372,8 @@ window.displayPlane = function() {
                 meshPlane.material.color.set( new THREE.Color(params.color) );
                 meshPlane.material.needsUpdate = true;
             });
+        ;
+        console.log(meshPlane);
     
         planeFolder.open();
 
@@ -357,6 +420,11 @@ function control_transform(mesh) {
                 break;
         }
     });
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    render();
 }
 
 // GUI Controls
@@ -415,7 +483,13 @@ window.setPointLight= function() {
 window.removeLight = function() {
     if(control.object) {
         if(control.object.name == 'light')
-            control.object = mesh;
+            // What if there is not mesh there
+            for (var i of scene.children) {
+                if(i.name == 'main-obj' || i.name == 'plane') {
+                    control.object = i;
+                    break;
+                } 
+            }
     }
     scene.remove(light);
     scene.remove(PointLightHelper);
@@ -462,4 +536,14 @@ window.displayAmbient = function() {
     }
 }
 
-window.requestAnimationFrame(render);
+
+
+
+
+
+
+
+
+
+
+animate()
