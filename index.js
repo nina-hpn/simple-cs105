@@ -367,6 +367,9 @@ window.renderGeometry= function(id) {
             mesh.material.color.set( new THREE.Color(obj_params.color) );
             mesh.material.needsUpdate = true;
         });
+    objectFolder.add(mesh.rotation, 'x', 0, 1);
+    objectFolder.add(mesh.rotation, 'y', 0, 1);
+    objectFolder.add(mesh.rotation, 'z', 0, 1);
     objectFolder.open();
     render();
 }
@@ -455,7 +458,32 @@ function animate() {
     render();
 }
 
+window.initBasicAnimation = function() {
+    // See if any box of animation has been checked
+    var ani1 = document.querySelector('input[id="ani1"]:checked');
+    var ani2 = document.querySelector('input[id="ani2"]:checked');
+    var ani3 = document.querySelector('input[id="ani3"]:checked');
 
+    var mesh = scene.getObjectByName('main-obj');
+    if(mesh) {
+        if(ani1) 
+            mesh.rotation.x += 0.01;
+        else
+            mesh.rotation.x = 0
+
+        if(ani2)
+            mesh.rotation.y += 0.01;
+        else 
+            mesh.rotation.y = 0
+
+        if(ani3)
+            mesh.rotation.z += 0.01
+        else 
+            mesh.rotation.z = 0
+
+    }
+    requestAnimationFrame(initBasicAnimation)
+}
 
 
 var customContainer = $('.gui').append($(gui.domElement));

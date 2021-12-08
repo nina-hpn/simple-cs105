@@ -152,13 +152,17 @@
                             <a href="#animationSubmenu" data-toggle="collapse" aria-expanded="false"
                                 class="dropdown-toggle">Animation</a>
                             <ul class="collapse list-unstyled" id="animationSubmenu">
-                                <li class="custom-control custom-checkbox">
-                                    <input type="checkbox" class="custom-control-input" id="animation1">
-                                    <label class="custom-control-label" for="animation1">Animation 1: rotate x</label>
+                                <li>
+                                    <input type="checkbox" value="ani1" name='ani1' id="ani1" onChange="initBasicAnimation()">
+                                    <label class="custom-control-label" for="ani1">Animation 1: rotate x</label>
                                 </li>
-                                <li class="custom-control custom-checkbox">
-                                    <input type="checkbox" class="custom-control-input" id="animation2">
-                                    <label class="custom-control-label" for="animation2">Animation 2: rotate y</label>
+                                <li>
+                                    <input type="checkbox" value="ani2" name='ani2' id="ani2" onChange="initBasicAnimation()">
+                                    <label class="custom-control-label" for="ani2">Animation 2: rotate y</label>
+                                </li>
+                                <li>
+                                    <input type="checkbox" value="ani3" name='ani3' id="ani3" onChange="initBasicAnimation()">
+                                    <label for="anim3">Animation 3: rotate z</label>
                                 </li>
                                 <li>
                                     <a href="#" onclick="Animation3()">Animation 3</a>
