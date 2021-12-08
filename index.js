@@ -4,8 +4,7 @@ import { TransformControls } from './scripts/libs/TransformControls.js';
 import { TeapotBufferGeometry } from './scripts/libs/TeapotBufferGeometry.js'
 import * as THREE from './scripts/libs/three.module.js'
 import { OrbitControls } from './scripts/libs/OrbitControls.js';
-import { Roboto } from './scripts/libs/TextGeometry.js';
-//import { BellBold } from './scripts/libs/TextGeometry.js';
+
 
 //Note things that we want to do
 //Making difference camera affects
@@ -37,12 +36,31 @@ var obj = {
     maxSize: 6.0,
 
 }
+//Basic params for TextGeometry
+
+let size= 10,
+    height= 10,
+    curveSegments= 10,
+    bevelEnabled= true,
+    bevelThickness= 0.01,
+    bevelSize= 0.02,
+    bevelOffset= 0,
+    bevelSegments= 1;
+
+const dic = {
+	'Bell': '../../fonts/Bell MT_Regular.json',
+	'Broadway': "../../fonts/Broadway_Regular.json",
+	'Constantia': "../../fonts/Constantia_Regular.json",
+	'Luna': "../../fonts/Luna_Regular.json",
+	'Roboto': '../../fonts/Roboto_Regular.json',
+	'Tahoma': '../../fonts/Tahoma_Regular.json'
+}
 
 const gui = new GUI( { autoPlace: false } );
 var control, orbit, gridHelper;
 var mouse = new THREE.Vector2();
 
-var planeFolder, objectFolder, AMBLightFolder;
+var planeFolder, objectFolder, AMBLightFolder, PLightFolder, cameraFolder;
 
 //All about the lights
 var raycaster, PointLightHelper, meshPlane, light, ambientLight;;
@@ -78,6 +96,9 @@ function init() {
 
     //Camera 
     camera = createCamera();
+    cameraFolder = gui.addFolder('Camera');
+    cameraFolder.add(camera.position, 'z', 0, 1000);
+    cameraFolder.open()
     
     //Renderer
     renderer = createRenderer();
@@ -252,30 +273,9 @@ window.setTexture = function(url='./graphics/textures/wood-walnut.jpg') {
 var obj_params = {
     color: 0xffffff
 }
-let size= 80,
-    height= 80,
-    curveSegments= 6,
-    bevelEnabled= true,
-    bevelThickness= 0.03,
-    bevelSize= 0.02,
-    bevelOffset= 0,
-    bevelSegments= 4;
+const loader = new THREE.FontLoader();
 
-function createTextGeometry() {
-    var text = document.getElementById('insertedText').value;
-    TextGeometry = new THREE.TextBufferGeometry( text, {
-        font: Roboto.regular,
-        size: size,
-        height: height,
-        curveSegments: curveSegments,
 
-        bevelThickness: bevelThickness,
-        bevelSize: bevelSize,
-        bevelEnabled: bevelEnabled
-    })
-    TextGeometry.computeBoundingBox();
-    return TextGeometry;
-}
 
 window.renderGeometry= function(id) {
     mesh = scene.getObjectByName('main-obj');
@@ -322,9 +322,30 @@ window.renderGeometry= function(id) {
             mesh = new THREE.Mesh(RingGeometry, material);
 			break;
         case 'text':
-            TextGeometry = createTextGeometry();
-            mesh = new THREE.Mesh(TextGeometry, material);
-            console.log(mesh)
+            var text = document.getElementById('insertedText').value;
+            loader.load( dic['Tahoma'], 
+
+                function(font) {
+                    var geometry = 	new THREE.TextGeometry(text, {
+                        font: font,
+                        size: size,
+                        height: height,
+                        curveSegments: curveSegments,
+                
+                        bevelThickness: bevelThickness,
+                        bevelSize: bevelSize,
+                        bevelEnabled: bevelEnabled,
+                        bevelOffset: bevelOffset,
+                        bevelSegments: bevelSegments
+                    })
+                    geometry.computeBoundingBox();
+                    mesh = new THREE.Mesh(geometry, material);
+                    mesh.name = 'main-obj';
+                    mesh.castShadow = true;
+                    mesh.receiveShadow = true;
+                    scene.add(mesh);
+                    control_transform(mesh);
+                })
 			break;
         case 'tree':
             mesh = new THREE.Mesh(TreeGeometry, material);
@@ -332,12 +353,14 @@ window.renderGeometry= function(id) {
             mesh = new THREE.Mesh(BoxGeometry, material);
             break;
     }
-    mesh.name = 'main-obj';
-    mesh.castShadow = true;
-	mesh.receiveShadow = true;
-	scene.add(mesh);
-	control_transform(mesh);
-
+    
+    if(id != 'text') {
+        scene.add(mesh);
+        mesh.name = 'main-obj';
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        control_transform(mesh);
+    }
     objectFolder = gui.addFolder('Object');
     objectFolder.addColor( obj_params, 'color')
         .onChange(function() {
@@ -345,10 +368,14 @@ window.renderGeometry= function(id) {
             mesh.material.needsUpdate = true;
         });
     objectFolder.open();
-	render();
+    render();
 }
 
+// GUI Controls
 
+var params = {
+    color: 0xffffff,
+}
 
 window.displayPlane = function() {
     var checked = document.querySelector('input[id="plane"]:checked');
@@ -373,6 +400,7 @@ window.displayPlane = function() {
                 meshPlane.material.needsUpdate = true;
             });
         ;
+        
         console.log(meshPlane);
     
         planeFolder.open();
@@ -427,11 +455,7 @@ function animate() {
     render();
 }
 
-// GUI Controls
 
-var params = {
-    color: 0xffffff
-}
 
 
 var customContainer = $('.gui').append($(gui.domElement));
@@ -463,6 +487,12 @@ function createPointLight(color=0xffffff, intensity=2, name='light') {
     return light
 }
 
+var pLight_params = {
+    color: 0xffffff,
+    decay: 1,
+    intensity: 2
+}
+
 window.setPointLight= function() {
     light = scene.getObjectByName('light');
 
@@ -475,6 +505,15 @@ window.setPointLight= function() {
         PointLightHelper.name = 'light-helper';
         scene.add(PointLightHelper);
 
+        PLightFolder = gui.addFolder('Point Light');
+        PLightFolder.addColor( pLight_params, 'color')
+            .onChange( function() {
+                light.color.set(new THREE.Color(pLight_params.color))
+            })
+        PLightFolder.add( pLight_params, 'intensity')
+            .onChange( function() {
+                light.intensity = pLight_params.intensity;
+            })
         render();
     }
 
@@ -491,9 +530,10 @@ window.removeLight = function() {
                 } 
             }
     }
+    gui.removeFolder(PLightFolder);
     scene.remove(light);
     scene.remove(PointLightHelper);
-
+    
     render();
 }
 
