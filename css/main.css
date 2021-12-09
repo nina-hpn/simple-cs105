@@ -263,3 +263,11 @@ list-style: none;
 label {
     color: rgba(255, 255, 255, 0.7);
 }
+
+.no-decoration{
+    text-decoration: none;
+}
+
+li a:hover{
+    text-decoration: none;
+}
