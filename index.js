@@ -6,18 +6,11 @@ import * as THREE from './scripts/libs/three.module.js'
 import { OrbitControls } from './scripts/libs/OrbitControls.js';
 
 
-//Note things that we want to do
-//Making difference camera affects
-// Modified scene color
-// Creating more geometry
-//Set Material is having abit of a problem
-
-//Define text on header;
-var text = 'This is SIMPLE - Final Project'
-addTexttoHeader(text, 'auxiliary');
-
 var canvas = document.getElementById('webgl');
 var controller = new GIO.Controller( canvas );
+var clock = new THREE.Clock();
+
+
 
 
 //Define basic scene objs
@@ -25,6 +18,7 @@ var scene, camera, renderer;
 var mesh, texture;
 var material = new THREE.MeshBasicMaterial({color: 0xffffff});
 var planeMaterial;
+var time = 0, delta = 0;
 
 material.needsUpdate = true;
 
@@ -34,21 +28,21 @@ var obj = {
     displayOutline: false,
 
     maxSize: 6.0,
-
+    
 }
 //Basic params for TextGeometry
 
 let size= 10,
-    height= 10,
-    curveSegments= 10,
-    bevelEnabled= true,
-    bevelThickness= 0.01,
-    bevelSize= 0.02,
-    bevelOffset= 0,
-    bevelSegments= 1;
+height= 10,
+curveSegments= 10,
+bevelEnabled= true,
+bevelThickness= 0.01,
+bevelSize= 0.02,
+bevelOffset= 0,
+bevelSegments= 1;
 
 const dic = {
-	'Bell': '../../fonts/Bell MT_Regular.json',
+    'Bell': '../../fonts/Bell MT_Regular.json',
 	'Broadway': "../../fonts/Broadway_Regular.json",
 	'Constantia': "../../fonts/Constantia_Regular.json",
 	'Luna': "../../fonts/Luna_Regular.json",
@@ -90,6 +84,12 @@ var TextGeometry;
 init();
 render();
 
+//Define text on header;
+var text = 'This is SIMPLE - Final Project'
+addTexttoHeader(text, 'auxiliary');
+
+
+// Basic function
 function init() {
     // Scene
     scene = createScene();
@@ -128,19 +128,17 @@ function init() {
 
     canvas.appendChild(renderer.domElement);
 
-    //canvas.addEventListener('mousedown', onMouseDown, false);
 }
 
 function render() {
-
     // update the picking ray with the camera and mouse position
     raycaster.setFromCamera( mouse, camera );
 
     renderer.render(scene, camera);
 }
 
-// Make the canvas responsive
 window.addEventListener('resize', () => {
+    // Make the canvas responsive
     var width = window.innerWidth
     var height = window.innerHeight
     renderer.setSize(width, height)
@@ -149,7 +147,7 @@ window.addEventListener('resize', () => {
     render()
 })
 
-// Create basic scene elements
+// Create basic scene elements like camera, renderer or scene
 function createScene() {
     var scene = new THREE.Scene();
     scene.background = new THREE.Color('black');
@@ -187,10 +185,7 @@ function createGridHelper() {
     return gridHelper;
 }
 
-// GUI Controllers
-
-
-
+// Area for main-obj initialization and changing material
 
 // Resolve mesh and objects
 
@@ -208,8 +203,9 @@ function CloneMesh(dummy_mesh) {
 }
 
 
-
 window.setMaterial = function(mat='phong', color=0xffffff, size=0.5, wireframe=true, transparent=true) {
+    // Getting the current main-obj on screen and setting it with the chosen material 
+
     mesh = scene.getObjectByName('main-obj');
     light = scene.getObjectByName('light');
     type_material = mat;
@@ -270,6 +266,8 @@ window.setTexture = function(url='./graphics/textures/wood-walnut.jpg') {
     }
 }
 
+// Define some params control and text loader
+
 var obj_params = {
     color: 0xffffff
 }
@@ -277,7 +275,9 @@ const loader = new THREE.FontLoader();
 
 
 
-window.renderGeometry= function(id) {
+window.renderGeometry= function(id, fontName='Tahoma') {
+    // Setting the main-obj geometry
+
     mesh = scene.getObjectByName('main-obj');
     scene.remove(mesh);
     if(mesh) {
@@ -323,7 +323,7 @@ window.renderGeometry= function(id) {
 			break;
         case 'text':
             var text = document.getElementById('insertedText').value;
-            loader.load( dic['Tahoma'], 
+            loader.load( dic[fontName], 
 
                 function(font) {
                     var geometry = 	new THREE.TextGeometry(text, {
@@ -361,15 +361,20 @@ window.renderGeometry= function(id) {
         mesh.receiveShadow = true;
         control_transform(mesh);
     }
+
+    //Adding GUI for control 
     objectFolder = gui.addFolder('Object');
+
+    // Change mesh color
     objectFolder.addColor( obj_params, 'color')
         .onChange(function() {
             mesh.material.color.set( new THREE.Color(obj_params.color) );
             mesh.material.needsUpdate = true;
         });
-    objectFolder.add(mesh.rotation, 'x', 0, 1);
-    objectFolder.add(mesh.rotation, 'y', 0, 1);
-    objectFolder.add(mesh.rotation, 'z', 0, 1);
+
+    
+
+
     objectFolder.open();
     render();
 }
@@ -483,6 +488,17 @@ window.initBasicAnimation = function() {
 
     }
     requestAnimationFrame(initBasicAnimation)
+}
+
+window.Animation3 = function() {
+    var mesh = scene.getObjectByName('main-obj');
+    if(mesh) {
+        delta = clock.getDelta();
+        time += delta;
+        mesh.position.y = 0.5 + Math.abs(Math.sin(time * 3)) * 2;;
+        mesh.position.y = Math.cos(time) * 4;
+        requestAnimationFrame(Animation3)
+    }
 }
 
 
