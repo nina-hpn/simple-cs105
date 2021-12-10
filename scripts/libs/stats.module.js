@@ -7,7 +7,7 @@
 	var mode = 0;
 
 	var container = document.createElement( 'div' );
-	container.style.cssText = 'position:fixed;top:0;left:0;cursor:pointer;opacity:0.9;z-index:10000';
+	container.style.cssText = 'position:absolute;bottom:0;right:0;cursor:pointer;opacity:0.9;z-index:10000';
 	container.addEventListener( 'click', function ( event ) {
 
 		event.preventDefault();
@@ -122,7 +122,7 @@ Stats.Panel = function ( name, fg, bg ) {
 	var canvas = document.createElement( 'canvas' );
 	canvas.width = WIDTH;
 	canvas.height = HEIGHT;
-	canvas.style.cssText = 'width:80px;height:48px';
+	canvas.style.cssText = 'width:80px;height:48px;';
 
 	var context = canvas.getContext( '2d' );
 	context.font = 'bold ' + ( 9 * PR ) + 'px Helvetica,Arial,sans-serif';

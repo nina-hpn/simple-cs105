@@ -4,6 +4,7 @@ import { TransformControls } from './scripts/libs/TransformControls.js';
 import { TeapotBufferGeometry } from './scripts/libs/TeapotBufferGeometry.js'
 import * as THREE from './scripts/libs/three.module.js'
 import { OrbitControls } from './scripts/libs/OrbitControls.js';
+import Stats from './scripts/libs/stats.module.js'
 
 
 var canvas = document.getElementById('webgl');
@@ -54,10 +55,17 @@ const gui = new GUI( { autoPlace: false } );
 var control, orbit, gridHelper;
 var mouse = new THREE.Vector2();
 
-var planeFolder, objectFolder, AMBLightFolder, PLightFolder, cameraFolder;
+var planeFolder, objectFolder, AMBLightFolder, PLightFolder, cameraFolder, SLightFolder;
 
 //All about the lights
-var raycaster, PointLightHelper, meshPlane, light, ambientLight;;
+var raycaster, PointLightHelper, meshPlane, light, ambientLight, SpotLightHelper;
+
+
+// Adding the stat panel
+var stats = new Stats();
+stats.showPanel(0);
+document.body.appendChild( stats.dom );
+
 
 //Define basic Gemetry
 
@@ -394,7 +402,10 @@ window.displayPlane = function() {
         planeMaterial.side = THREE.DoubleSide;
         meshPlane = new THREE.Mesh(PlaneGeometry, planeMaterial);
 
-        meshPlane.rotation.x = Math.PI / 2;
+        meshPlane.receiveShadow = true;
+        meshPlane.castShadow = true;
+
+        meshPlane.rotation.x -= Math.PI / 2;
         meshPlane.position.y = -30
         meshPlane.name = 'plane'
         scene.add(meshPlane);
@@ -459,8 +470,10 @@ function control_transform(mesh) {
 }
 
 function animate() {
+    stats.begin()
     requestAnimationFrame(animate);
     render();
+    stats.end();
 }
 
 window.initBasicAnimation = function() {
@@ -540,26 +553,27 @@ var pLight_params = {
 window.setPointLight= function() {
     light = scene.getObjectByName('light');
 
-    if(!light) {
-        light = createPointLight();
-        scene.add(light);
-        control_transform(light);
+    if(light) 
+        scene.remove(light);
+    
+    light = createPointLight();
+    scene.add(light);
+    control_transform(light);
 
-        PointLightHelper = new THREE.PointLightHelper(light);
-        PointLightHelper.name = 'light-helper';
-        scene.add(PointLightHelper);
+    PointLightHelper = new THREE.PointLightHelper(light);
+    PointLightHelper.name = 'pointlight-helper';
+    scene.add(PointLightHelper);
 
-        PLightFolder = gui.addFolder('Point Light');
-        PLightFolder.addColor( pLight_params, 'color')
-            .onChange( function() {
-                light.color.set(new THREE.Color(pLight_params.color))
-            })
-        PLightFolder.add( pLight_params, 'intensity')
-            .onChange( function() {
-                light.intensity = pLight_params.intensity;
-            })
-        render();
-    }
+    PLightFolder = gui.addFolder('PointLight');
+    PLightFolder.addColor( pLight_params, 'color')
+        .onChange( function() {
+            light.color.set(new THREE.Color(pLight_params.color))
+        })
+    PLightFolder.add( pLight_params, 'intensity')
+        .onChange( function() {
+            light.intensity = pLight_params.intensity;
+        })
+    render();
 
 }
 
@@ -574,11 +588,62 @@ window.removeLight = function() {
                 } 
             }
     }
-    gui.removeFolder(PLightFolder);
+    if(SLightFolder)
+        gui.removeFolder(SLightFolder);
+    if(PLightFolder)
+        gui.removeFolder(PLightFolder);
     scene.remove(light);
-    scene.remove(PointLightHelper);
+
+    if(scene.getObjectByName('pointlight-helper'))
+        scene.remove(PointLightHelper);
+
+    if(scene.getObjectByName('spotlight-helper'))
+        scene.remove(SpotLightHelper);
     
     render();
+}
+
+// SpotLightHelper Light
+function createSpotLight(color=0xffffff, intensity=1, decay=1, name='light') {
+    var light = new THREE.SpotLight(new THREE.Color(color), intensity=intensity, decay=decay);
+    light.castShadow = true;
+    light.position.set(0, 70, 0);
+    light.name = name;
+    return light;
+}
+
+window.setSpotLight= function() {
+    light = scene.getObjectByName('light');
+
+    if(light)   {
+        scene.remove(light);
+        control.detach()
+        if(SLightFolder)
+            gui.removeFolder(SLightFolder);
+        if(PLightFolder)
+            gui.removeFolder(PLightFolder);
+    }
+        
+
+    light = createSpotLight();
+    scene.add(light);
+    control_transform(light);
+    
+    SpotLightHelper = new THREE.SpotLightHelper(light);
+    SpotLightHelper.name = 'spotlight-helper';
+    scene.add(SpotLightHelper);
+
+    SLightFolder = gui.addFolder('SpotLight');
+    SLightFolder.addColor( pLight_params, 'color')
+        .onChange( function() {
+            light.color.set(new THREE.Color(pLight_params.color))
+        })
+    SLightFolder.add( pLight_params, 'intensity')
+        .onChange( function() {
+            light.intensity = pLight_params.intensity;
+        })
+    render();
+
 }
 
 //Ambient Light
