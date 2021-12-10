@@ -58,6 +58,9 @@
                             
                         </li>
                         <li data-toggle="collapse" aria-expanded="false">
+                            <button class='rm-button' onClick="removeGeometry('all')">Reset scene</button>
+                        </li>
+                        <li data-toggle="collapse" aria-expanded="false">
                             <input type='checkbox'  id='plane' value='plane' name='plane' onchange="displayPlane()"/>
                             <label for='plane'>Plane</label>
                         </li>
@@ -175,30 +178,6 @@
                                 </li>
                                 <li>
                                     <a href="#" class='no-decoration' onclick="ResetAnimation()">Remove Animation</a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li>
-                            <a href="#cameraSubmenu" data-toggle="collapse" aria-expanded="false"
-                                class="dropdown-toggle">Camera Effects</a>
-                            <ul class="collapse list-unstyled" id="cameraSubmenu">
-                                <li class="custom-control custom-checkbox">
-                                    <input type="checkbox" class="custom-control-input" id="cameraAnimation1">
-                                    <label class="custom-control-label" for="animation1">Animation 1: rotate x</label>
-                                </li>
-                                <li class="custom-control custom-checkbox">
-                                    <input type="checkbox" class="custom-control-input" id="cameraAnimation2">
-                                    <label class="custom-control-label" for="animation2">Animation 2: rotate y</label>
-                                </li>
-                                <li>
-                                    <a href="#" onclick="CameraAnimation3()">Animation 3</a>
-                                </li>
-                                <li>
-                                    <a href="#" onclick="CameraAnimation4()">Animation 4</a>
-                                </li>
-                                <li>
-                                    <a href="#" onclick="ResetAnimation()">Remove Animation</a>
                                 </li>
                             </ul>
                         </li>

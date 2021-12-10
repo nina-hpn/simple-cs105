@@ -18,6 +18,7 @@ var clock = new THREE.Clock();
 var scene, camera, renderer;
 var mesh, texture;
 var material = new THREE.MeshBasicMaterial({color: 0xffffff});
+var specialMaterial, preMaterial = false, isBuffer = false;
 var planeMaterial;
 var time = 0, delta = 0;
 
@@ -51,6 +52,11 @@ const dic = {
 	'Tahoma': '../../fonts/Tahoma_Regular.json'
 }
 
+
+//Define params for points material
+var positions = [], colors = [];
+
+
 const gui = new GUI( { autoPlace: false } );
 var control, orbit, gridHelper;
 var mouse = new THREE.Vector2();
@@ -72,19 +78,19 @@ document.body.appendChild( stats.dom );
 var type_material;
 
 
-var BoxGeometry = new THREE.BoxGeometry(30, 30, 30, 40, 40, 40);
-var SphereGeometry = new THREE.SphereGeometry(20, 20, 20);
-var ConeGeometry = new THREE.ConeGeometry(18, 30, 32, 20);
-var CylinderGeometry = new THREE.CylinderGeometry(20, 20, 40, 30, 5);
-var TorusGeometry = new THREE.TorusGeometry(20, 5, 20, 100);
+var BoxGeometry = new THREE.BoxBufferGeometry(500, 500, 500, 40, 40, 40);
+var SphereGeometry = new THREE.SphereBufferGeometry(20, 20, 20);
+var ConeGeometry = new THREE.ConeBufferGeometry(18, 30, 32, 20);
+var CylinderGeometry = new THREE.CylinderBufferGeometry(20, 20, 40, 30, 5);
+var TorusGeometry = new THREE.TorusBufferGeometry(20, 5, 20, 100);
 var TeapotGeometry = new TeapotBufferGeometry(20, 8);
 var DodecahedronGeometry = new THREE.DodecahedronBufferGeometry(25);
 var IcosahedronGeometry = new THREE.IcosahedronBufferGeometry(25);
 var OctahedronGeometry =  new THREE.OctahedronBufferGeometry(25);
 var TetrahedronGeometry = new THREE.TetrahedronBufferGeometry(25);
 var PlaneGeometry = new THREE.PlaneBufferGeometry(80, 80);
-var CircleGeometry = new THREE.CircleGeometry(80,80);
-var RingGeometry = new THREE.RingGeometry(80,80);
+var CircleGeometry = new THREE.CircleBufferGeometry(80,80);
+var RingGeometry = new THREE.RingBufferGeometry(80,80);
 var TextGeometry;
 
 
@@ -124,6 +130,7 @@ function init() {
     orbit.addEventListener('change', render);
 
     control = new TransformControls(camera, renderer.domElement);
+    control.name = 'control';
     control.addEventListener('change', render);
     control.addEventListener('dragging-changed', function(event) {
         orbit.enabled = !event.value;
@@ -164,7 +171,7 @@ function createScene() {
     return scene;
 }
 
-function createCamera(x=1, y=50, z=100) {
+function createCamera(x=300, y=500, z=1000) {
     var fov = 75;
     var aspect = window.innerWidth / window.innerHeight;
     var near = 0.1;
@@ -187,9 +194,10 @@ function createRenderer() {
 }
 
 function createGridHelper() {
-    var size = 300;
+    var size = 1000;
     var division = 50;
     var gridHelper = new THREE.GridHelper(size, division, 0x888888);
+    gridHelper.name = 'grid-helper';
     return gridHelper;
 }
 
@@ -197,21 +205,99 @@ function createGridHelper() {
 
 // Resolve mesh and objects
 
+window.removeGeometry = function(name='all') {
+    if(name == 'all') {
+        console.log(control);
+        control.detach();
+        for(let i = 0; i < scene.children.length; ++i) {
+            var obj = scene.children[i]
+            if(obj.name != 'grid-helper' && obj.name != 'control') {
+                scene.remove(obj)
+            }
+        }
+        for(let [key, value] of Object.entries(gui.__folders)) {
+            if(key != 'Camera') {
+                gui.removeFolder(value);
+            }
+        }
+    }
+    else {
+        if(name != 'main-obj') {
+            // If it is not main-obj
+            // Check if there is main-obj on screen
+            var test = scene.getObjectByName('main-obj');
+            if(test) {
+                // If there is main-obj
+                // Move control to main-obj
+                control.attach(test);
+                var remove = scene.getObjectByName(name);
+                scene.remove(remove);
+
+                // Remove gui folder of obj with the same name
+                for(let [key, value] of Object.entries(gui.__folders)) {
+                    if(value.name == name) {
+                        gui.removeFolder(value);
+                    }
+                }
+            }
+        }
+        else {
+            // If it is remove main-obj
+            // Just remove all
+            removeGeometry('all');
+        }
+    }
+}
+
 function CloneMesh(dummy_mesh) {
     // Inherit all name, position and animation that is currently on the old mesh 
     // Put it on the new one
     mesh.name = dummy_mesh.name;
-    mesh.position.set(dummy_mesh.position.x, dummy_mesh.position.y, dummy_mesh.position.z);
-	mesh.rotation.set(dummy_mesh.rotation.x, dummy_mesh.rotation.y, dummy_mesh.rotation.z);
-	mesh.scale.set(dummy_mesh.scale.x, dummy_mesh.scale.y, dummy_mesh.scale.z);
+    if(!isBuffer) {
+        mesh.position.set(dummy_mesh.position.x, dummy_mesh.position.y, dummy_mesh.position.z);
+        mesh.rotation.set(dummy_mesh.rotation.x, dummy_mesh.rotation.y, dummy_mesh.rotation.z);
+        mesh.scale.set(dummy_mesh.scale.x, dummy_mesh.scale.y, dummy_mesh.scale.z);
+    }
 	mesh.castShadow = true;
 	mesh.receiveShadow = true;
     scene.add(mesh);
     control_transform(mesh);
 }
 
+function createColorAndPositionOfBuffer(setColor=false) {
+    // Basic color for better display if haven't have setting color
+    var particles = 20000;
 
-window.setMaterial = function(mat='phong', color=0xffffff, size=0.5, wireframe=true, transparent=true) {
+    var color = new THREE.Color();
+    var n = 1000, n2 = n / 2;
+
+    for (let i = 0; i < particles; i++) {
+        const x = Math.random() * n - n2;
+        const y = Math.random() * n - n2;
+        const z = Math.random() * n - n2;
+
+        positions.push( x, y, z );
+
+        if(!setColor) {
+            // colors
+
+            const vx = ( x / n ) + 0.5;
+            const vy = ( y / n ) + 0.5;
+            const vz = ( z / n ) + 0.5;
+
+            color.setRGB( vx, vy, vz );
+
+            colors.push( color.r, color.g, color.b );
+
+        }
+        else 
+            colors.push( setColor.r, setColor.g, setColor.b);
+    }
+}
+
+
+
+window.setMaterial = function(mat='phong', color=0xffffff, size=15, wireframe=true, transparent=true) {
     // Getting the current main-obj on screen and setting it with the chosen material 
 
     mesh = scene.getObjectByName('main-obj');
@@ -220,12 +306,13 @@ window.setMaterial = function(mat='phong', color=0xffffff, size=0.5, wireframe=t
     color = new THREE.Color(color);
 
     if (mesh) {
-        const dummy_mesh = mesh.clone();
+        var dummy_mesh = mesh.clone();
         scene.remove(mesh);
 
         switch(type_material) {
             case 'point':
-                material = new THREE.PointsMaterial({ color: color, size: size});
+                material = new THREE.PointsMaterial({ size: size, vertexColors: true});
+                isBuffer = true;
                 break;
 
             case 'basic':
@@ -235,7 +322,7 @@ window.setMaterial = function(mat='phong', color=0xffffff, size=0.5, wireframe=t
             case 'line':
                 material = new THREE.LineBasicMaterial( {
                     color: color,
-                    linewidth: 1,
+                    linewidth: 10,
                     linecap: 'round',
                     linejoin: 'round'
                 });
@@ -254,13 +341,30 @@ window.setMaterial = function(mat='phong', color=0xffffff, size=0.5, wireframe=t
                     material = new THREE.MeshLambertMaterial({map: texture, color: color});
                 break;
             default:
-                material = new THREE.MeshBasicMaterial({ color: color });
+                material = new THREE.MeshPhongMaterial({ color: color });
 
         }
-        mesh = new THREE.Mesh(dummy_mesh.geometry, material);
-        mesh.castShadow= true;
-        mesh.receiveShadow = true;
+        // If it is point then use special technique
+        if(preMaterial != 'point')
+            createColorAndPositionOfBuffer()
+        else
+            createColorAndPositionOfBuffer(color);
+
+        if(mat == 'point') {
+            dummy_mesh = new THREE.BufferGeometry();
+            dummy_mesh.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
+		    dummy_mesh.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
+            dummy_mesh.computeBoundingSphere();
+            mesh = new THREE.Mesh(dummy_mesh, material);
+            colors = [];
+            positions = [];
+        }
+        else {
+            mesh = new THREE.Mesh(dummy_mesh.geometry, material);
+        }
+        preMaterial = mat;
         CloneMesh(dummy_mesh);
+        isBuffer = false;
     }
     render();
 }
@@ -379,10 +483,6 @@ window.renderGeometry= function(id, fontName='Tahoma') {
             mesh.material.color.set( new THREE.Color(obj_params.color) );
             mesh.material.needsUpdate = true;
         });
-
-    
-
-
     objectFolder.open();
     render();
 }
@@ -445,7 +545,7 @@ function control_transform(mesh) {
     control.attach(mesh);
     scene.add(control);
 
-    text = 'T for translate, R for rotate, S for scale, L for PointLight ON, press spacebar for PointLight OFF'
+    text = 'T for translate, R for rotate, S for scale, L for Point/Spot Light ON, press spacebar for turn Point/Spot Light OFF'
     addTexttoHeader(text);
 
     window.addEventListener('keydown', function (event) {
@@ -538,7 +638,7 @@ function addTexttoHeader(text = 'Hello Word', id='auxiliary'){
 function createPointLight(color=0xffffff, intensity=2, name='light') {
     var light = new THREE.PointLight(new THREE.Color(color), intensity);
     light.castShadow = true;
-	light.position.set(0, 70, 0);
+	light.position.set(0, 600, 0);
     light.name = name;
 
     return light
@@ -554,7 +654,7 @@ window.setPointLight= function() {
     light = scene.getObjectByName('light');
 
     if(light) 
-        scene.remove(light);
+        removeLight();
     
     light = createPointLight();
     scene.add(light);
@@ -588,18 +688,24 @@ window.removeLight = function() {
                 } 
             }
     }
-    if(SLightFolder)
-        gui.removeFolder(SLightFolder);
-    if(PLightFolder)
-        gui.removeFolder(PLightFolder);
+    
+    // Remove light folder
+    for(let [key, value] of Object.entries(gui.__folders)) {
+        if(value.name == 'PointLight' || value.name == 'SpotLight') {
+            gui.removeFolder(value);
+        }
+    }
+
+    // Remove helper from scene
+    for(let i of scene.children) {
+        if(i.name == 'spotlight-helper' || i.name == 'pointlight-helper') {
+            scene.remove(i)
+        }
+    }
+
+    // Remove light
     scene.remove(light);
 
-    if(scene.getObjectByName('pointlight-helper'))
-        scene.remove(PointLightHelper);
-
-    if(scene.getObjectByName('spotlight-helper'))
-        scene.remove(SpotLightHelper);
-    
     render();
 }
 
@@ -615,15 +721,10 @@ function createSpotLight(color=0xffffff, intensity=1, decay=1, name='light') {
 window.setSpotLight= function() {
     light = scene.getObjectByName('light');
 
-    if(light)   {
-        scene.remove(light);
-        control.detach()
-        if(SLightFolder)
-            gui.removeFolder(SLightFolder);
-        if(PLightFolder)
-            gui.removeFolder(PLightFolder);
-    }
-        
+    if(light)   
+        removeLight();
+
+    console.log(gui);
 
     light = createSpotLight();
     scene.add(light);
