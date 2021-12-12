@@ -1,7 +1,8 @@
 /*main.css*/
 
 :root {
-    --blue: #05c7f2
+    --blue: #05c7f2;
+    --pink: #f2688a;
 }
 
 body {
@@ -307,4 +308,16 @@ output {
     color: rgb(134, 126, 126);
     font-size: .75rem;
     margin-left: 140px;
+}
+
+.plane-texture {
+    display: inline-block;
+    font-size: .65rem;
+    margin-left: 10px;
+    opacity: 50%;
+}
+.plane-texture:hover {
+    opacity: 70%;
+    color: blue;
+    transition: 0.3s;
 }

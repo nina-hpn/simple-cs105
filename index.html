@@ -64,6 +64,8 @@
                         <li data-toggle="collapse" aria-expanded="false">
                             <input type='checkbox'  id='plane' value='plane' name='plane' onchange="displayPlane()"/>
                             <label for='plane'>Plane</label>
+                            <input type='file' accept="image/*" id='texture-plane' style='display:none;' onChange="setTexture(window.URL.createObjectURL(this.files[0]),'plane')"/> 
+                            <div class='plane-texture' onClick='uploadImage("texture-plane")'>Set Plane Texture</div>
                         </li>
                         <li data-toggle="collapse" aria-expanded="false">
                             <input type='checkbox' id='ambient' value='ambient' name='ambient' onchange="displayAmbient()"/>
@@ -134,7 +136,7 @@
                                     <a href="#" onclick="setMaterial('phong');">Solid</a>
                                 </li>
                                 <li>
-                                    <a href="#" onClick='uploadImage();'>Special Texture</a>     
+                                    <a href="#" onClick='uploadImage("texture-obj");'>Special Texture</a>     
                                     <input type='file' accept="image/*" id='texture-obj' style='display:none;' onChange="setTexture(window.URL.createObjectURL(this.files[0]))"/> 
                                 </li>
                                 <!-- <li>
@@ -176,10 +178,10 @@
                                     <label for="anim3" onClick="document.getElementById('ani3').click()">Animation 3: rotate z</label>
                                 </li>
                                 <li>
-                                    <a href="#" class='no-decoration' onclick="Animation3()">Animation 3: Floating</a>
+                                    <a href="#" class='no-decoration' onclick="Animation3()">Animation 4: Floating</a>
                                 </li>
                                 <li>
-                                    <a href="#" class='no-decoration' onclick="Animation4()">Animation 4</a>
+                                    <a href="#" class='no-decoration' onclick="Animation4()">Animation 5: Going in Round</a>
                                 </li>
                                 <li>
                                     <a href="#" class='no-decoration' onclick="removeAnimation()">Remove Animation</a>

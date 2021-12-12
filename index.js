@@ -292,17 +292,17 @@ window.removeGeometry = function(name='all') {
 }
 
 
-function CloneMesh(dummy_mesh) {
+function CloneMesh(dummy_mesh, obj=mesh) {
     // Inherit all name, position and animation that is currently on the old mesh 
     // Put it on the new one
-    mesh.name = dummy_mesh.name;
-    mesh.position.set(dummy_mesh.position.x, dummy_mesh.position.y, dummy_mesh.position.z);
-    mesh.rotation.set(dummy_mesh.rotation.x, dummy_mesh.rotation.y, dummy_mesh.rotation.z);
-    mesh.scale.set(dummy_mesh.scale.x, dummy_mesh.scale.y, dummy_mesh.scale.z);
-	mesh.castShadow = true;
-	mesh.receiveShadow = true;
-    scene.add(mesh);
-    control_transform(mesh);
+    obj.name = dummy_mesh.name;
+    obj.position.set(dummy_mesh.position.x, dummy_mesh.position.y, dummy_mesh.position.z);
+    obj.rotation.set(dummy_mesh.rotation.x, dummy_mesh.rotation.y, dummy_mesh.rotation.z);
+    obj.scale.set(dummy_mesh.scale.x, dummy_mesh.scale.y, dummy_mesh.scale.z);
+	obj.castShadow = true;
+	obj.receiveShadow = true;
+    scene.add(obj);
+    control_transform(obj);
 }
 
 function createColorAndPositionOfBuffer(setColor=false) {
@@ -338,85 +338,116 @@ function createColorAndPositionOfBuffer(setColor=false) {
 
 
 
-window.setMaterial = function(mat='point', color=0xffffff, size=3, wireframe=true, transparent=true) {
+window.setMaterial = function(mat='point', obj='main-obj',color=0xffffff, size=3, wireframe=true, transparent=true) {
     // Getting the current main-obj on screen and setting it with the chosen material 
 
-    mesh = scene.getObjectByName('main-obj');
-    light = scene.getObjectByName('light');
     type_material = mat;
+    light = scene.getObjectByName('light');
     color = new THREE.Color(color);
 
-    if (mesh) {
-        var dummy_mesh = mesh.clone();
-        scene.remove(mesh);
+    if(obj == 'main-obj') {
+        // If this is setMaterial for main-obj
+        mesh = scene.getObjectByName('main-obj');
 
-        switch(type_material) {
-            case 'standard':
-                material = new THREE.MeshStandardMaterial({ color: color, side: THREE.DoubleSide });
-                break;
-            case 'point':
-                material = new THREE.PointsMaterial({ size: size, vertexColors: true, side: THREE.DoubleSide, color: color});
-                //isBuffer = true;
-                break;
+        if (mesh) {
+            var dummy_mesh = mesh.clone();
+            scene.remove(mesh);
 
-            case 'basic':
-                material = new THREE.MeshBasicMaterial({ color: color, wireframe: wireframe, side: THREE.DoubleSide});
-                break;
+            switch(type_material) {
+                case 'standard':
+                    material = new THREE.MeshStandardMaterial({ color: color, side: THREE.DoubleSide });
+                    break;
+                case 'point':
+                    material = new THREE.PointsMaterial({ size: size, vertexColors: true, side: THREE.DoubleSide, color: color});
+                    //isBuffer = true;
+                    break;
 
-            case 'line':
-                material = new THREE.LineBasicMaterial( {
-                    color: color,
-                    linewidth: 10,
-                    linecap: 'round',
-                    linejoin: 'round', 
-                    side: THREE.DoubleSide
-                });
-                break;
-            case 'normal':
-                material = new THREE.MeshNormalMaterial({ color: color, side: THREE.DoubleSide});
+                case 'basic':
+                    material = new THREE.MeshBasicMaterial({ color: color, wireframe: wireframe, side: THREE.DoubleSide});
+                    break;
 
-            case 'phong':
-                material = new THREE.MeshPhongMaterial({color: color, side: THREE.DoubleSide});
-                break;
+                case 'line':
+                    material = new THREE.LineBasicMaterial( {
+                        color: color,
+                        linewidth: 10,
+                        linecap: 'round',
+                        linejoin: 'round', 
+                        side: THREE.DoubleSide
+                    });
+                    break;
+                case 'normal':
+                    material = new THREE.MeshNormalMaterial({ color: color, side: THREE.DoubleSide});
 
-            case 'lambert':
-                if (!light) 
-                    material = new THREE.MeshBasicMaterial({map: texture,  color: color, side: THREE.DoubleSide });
-                else
-                    material = new THREE.MeshLambertMaterial({map: texture, color: color, side: THREE.DoubleSide});
-                break;
-            default:
-                material = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
+                case 'phong':
+                    material = new THREE.MeshPhongMaterial({color: color, side: THREE.DoubleSide});
+                    break;
 
+                case 'lambert':
+                    if (!light) 
+                        material = new THREE.MeshBasicMaterial({map: texture,  color: color, side: THREE.DoubleSide });
+                    else
+                        material = new THREE.MeshLambertMaterial({map: texture, color: color, side: THREE.DoubleSide});
+                    break;
+                default:
+                    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
+
+            }
+
+            if(mat == 'point') {
+                mesh = new THREE.Points(dummy_mesh.geometry, material);
+            }
+            else {
+                mesh = new THREE.Mesh(dummy_mesh.geometry, material);
+            }
+            CloneMesh(dummy_mesh);
+            render();
+        
         }
+    }
+    else if (obj == 'plane') {
+        meshPlane = scene.getObjectByName('plane');
+        if(plane) {
+            var dummy_plane = meshPlane.clone();
+            scene.remove(meshPlane);
 
-        if(mat == 'point') {
-            mesh = new THREE.Points(dummy_mesh.geometry, material);
+            switch(type_material) {
+                case 'lambert':
+                    if (!light) 
+                        planeMaterial = new THREE.MeshBasicMaterial({map: texture,  color: color, side: THREE.DoubleSide });
+                    else
+                        planeMaterial = new THREE.MeshLambertMaterial({map: texture, color: color, side: THREE.DoubleSide});
+                    break;
+                default:
+                    planeMaterial = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
+            }
+            meshPlane = new THREE.Mesh(PlaneGeometry, planeMaterial);
+            CloneMesh(dummy_plane, meshPlane);
+            render();
         }
-        else {
-            mesh = new THREE.Mesh(dummy_mesh.geometry, material);
-        }
-        CloneMesh(dummy_mesh);
-        render();
-    
     }
 
 }
 
-window.uploadImage = function() {
+window.uploadImage = function(id='texture-obj') {
     console.log('Uploading');
-    document.getElementById('texture-obj').click();
+    document.getElementById(id).click();
 }
 
-window.setTexture = function(url='./graphics/textures/wood-walnut.jpg') {
+window.setTexture = function(url='./graphics/textures/wood-walnut.jpg', obj='main-obj') {
     mesh = scene.getObjectByName('main-obj');
-
-    console.log('Changing');
-    
-    if(mesh) {
-        texture = new THREE.TextureLoader().load(url, render);
-        texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-        setMaterial('lambert');
+    if(obj == 'main-obj') {  
+        if(mesh) {
+            texture = new THREE.TextureLoader().load(url, render);
+            texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+            setMaterial('lambert');
+        }
+    }
+    else if(obj == 'plane') {
+        if(mesh) {
+            texture = new THREE.TextureLoader().load(url, render);
+            texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+            setMaterial('lambert', obj=obj);
+        }
     }
 }
 
@@ -643,12 +674,30 @@ window.initBasicAnimation = function() {
 var idAnimation3;
 window.Animation3 = function() {
     var mesh = scene.getObjectByName('main-obj');
+    if(idAnimation4)
+        cancelAnimationFrame(idAnimation4);
     if(mesh) {
         delta = clock.getDelta();
         time += delta;
-        mesh.position.y = 0.5 + Math.abs(Math.sin(time * 3)) * 2;;
-        mesh.position.y = Math.cos(time) * 4;
+        mesh.position.x = 0.5 + Math.abs(Math.sin(time * 3)) * 2;;
+        mesh.position.y = Math.cos(time) * 40;
         idAnimation3 = requestAnimationFrame(Animation3)
+    }
+}
+
+var idAnimation4;
+window.Animation4 = function() {
+    var mesh = scene.getObjectByName('main-obj');
+    if(idAnimation3)
+        cancelAnimationFrame(idAnimation3);
+    if(mesh) {
+        delta = clock.getDelta();
+        time += delta;
+        mesh.rotation.y += 0.03;
+
+        mesh.position.x = 50*Math.cos(time) + 0;
+        mesh.position.z = 50*Math.sin(time) + 0;
+        idAnimation4 = requestAnimationFrame(Animation4)
     }
 }
 
@@ -667,6 +716,8 @@ window.removeAnimation = function() {
 
         if(idAnimation3)
             cancelAnimationFrame(idAnimation3);
+        if(idAnimation4)
+            cancelAnimationFrame(idAnimation4);
 
         mesh.rotation.set(0,0,0);
     }
