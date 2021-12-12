@@ -4,7 +4,8 @@ import { TransformControls } from './scripts/libs/TransformControls.js';
 import { TeapotBufferGeometry } from './scripts/libs/TeapotBufferGeometry.js'
 import * as THREE from './scripts/libs/three.module.js'
 import { OrbitControls } from './scripts/libs/OrbitControls.js';
-import Stats from './scripts/libs/stats.module.js'
+import Stats from './scripts/libs/stats.module.js';
+import { MinMaxGUIHelper } from './scripts/libs/helper.js';
 
 
 var canvas = document.getElementById('webgl');
@@ -16,8 +17,9 @@ var clock = new THREE.Clock();
 
 //Define basic scene objs
 var scene, camera, renderer;
+var cameraHelper;
 var mesh, texture;
-var material = new THREE.MeshBasicMaterial({color: 0xffffff});
+var material = new THREE.PointsMaterial({ size: 3, vertexColors: true, side: THREE.DoubleSide, color: 0xffffff});
 var specialMaterial, preMaterial = false, isBuffer = false;
 var planeMaterial;
 var time = 0, delta = 0;
@@ -25,21 +27,14 @@ var time = 0, delta = 0;
 material.needsUpdate = true;
 
 //Define gui and controls elements
-var obj = {
-    message: 'Final Project CS105 - Graphics',
-    displayOutline: false,
-
-    maxSize: 6.0,
-    
-}
 //Basic params for TextGeometry
 
-let size= 10,
-height= 10,
-curveSegments= 10,
+let size= 80,
+height= 80,
+curveSegments= 12,
 bevelEnabled= true,
 bevelThickness= 0.01,
-bevelSize= 0.02,
+bevelSize= 0.01,
 bevelOffset= 0,
 bevelSegments= 1;
 
@@ -58,6 +53,7 @@ var positions = [], colors = [];
 
 
 const gui = new GUI( { autoPlace: false } );
+var minMaxGUIHelper;
 var control, orbit, gridHelper;
 var mouse = new THREE.Vector2();
 
@@ -78,19 +74,18 @@ document.body.appendChild( stats.dom );
 var type_material;
 
 
-var BoxGeometry = new THREE.BoxBufferGeometry(500, 500, 500, 40, 40, 40);
-var SphereGeometry = new THREE.SphereBufferGeometry(20, 20, 20);
-var ConeGeometry = new THREE.ConeBufferGeometry(18, 30, 32, 20);
-var CylinderGeometry = new THREE.CylinderBufferGeometry(20, 20, 40, 30, 5);
-var TorusGeometry = new THREE.TorusBufferGeometry(20, 5, 20, 100);
-var TeapotGeometry = new TeapotBufferGeometry(20, 8);
-var DodecahedronGeometry = new THREE.DodecahedronBufferGeometry(25);
-var IcosahedronGeometry = new THREE.IcosahedronBufferGeometry(25);
-var OctahedronGeometry =  new THREE.OctahedronBufferGeometry(25);
-var TetrahedronGeometry = new THREE.TetrahedronBufferGeometry(25);
-var PlaneGeometry = new THREE.PlaneBufferGeometry(80, 80);
-var CircleGeometry = new THREE.CircleBufferGeometry(80,80);
-var RingGeometry = new THREE.RingBufferGeometry(80,80);
+var BoxGeometry = new THREE.BoxGeometry(100, 100, 100, 20, 20, 20);
+var SphereGeometry = new THREE.SphereGeometry(100, 20, 20);
+var ConeGeometry = new THREE.ConeGeometry(80, 100, 32, 20);
+var CylinderGeometry = new THREE.CylinderGeometry(100, 100, 20, 20, 5);
+var TorusGeometry = new THREE.TorusGeometry(100, 25, 20, 20);
+var TeapotGeometry = new TeapotBufferGeometry(100, 20);
+var DodecahedronGeometry = new THREE.DodecahedronGeometry(100);
+var IcosahedronGeometry = new THREE.IcosahedronGeometry(100);
+var OctahedronGeometry =  new THREE.OctahedronGeometry(100);
+var TetrahedronGeometry = new THREE.TetrahedronGeometry(100);
+var PlaneGeometry = new THREE.PlaneGeometry(2000, 2000);
+var CircleGeometry = new THREE.CircleGeometry(100,150);
 var TextGeometry;
 
 
@@ -111,7 +106,11 @@ function init() {
     //Camera 
     camera = createCamera();
     cameraFolder = gui.addFolder('Camera');
-    cameraFolder.add(camera.position, 'z', 0, 1000);
+    //console.log(camera);
+    cameraFolder.add(camera.position, 'x', -1000, 1000);
+    cameraFolder.add(camera.position, 'y', -1000, 1000);
+    cameraFolder.add(camera.position, 'z', -1000, 1000);
+
     cameraFolder.open()
     
     //Renderer
@@ -127,6 +126,8 @@ function init() {
     //Orbit Controls
     orbit = new OrbitControls(camera, renderer.domElement);
     orbit.update();
+    orbit.enableDamping = true;
+    orbit.dampingFactor = 0.05;
     orbit.addEventListener('change', render);
 
     control = new TransformControls(camera, renderer.domElement);
@@ -140,8 +141,8 @@ function init() {
     raycaster = new THREE.Raycaster();
 
 
-
     canvas.appendChild(renderer.domElement);
+    canvas.addEventListener('mousedown', onMouseDown, false);
 
 }
 
@@ -165,13 +166,12 @@ window.addEventListener('resize', () => {
 // Create basic scene elements like camera, renderer or scene
 function createScene() {
     var scene = new THREE.Scene();
-    scene.background = new THREE.Color('black');
     scene.name = 'scene';
     scene.autoUpdate = true;
     return scene;
 }
 
-function createCamera(x=300, y=500, z=1000) {
+function createCamera(x=300, y=300, z=400) {
     var fov = 75;
     var aspect = window.innerWidth / window.innerHeight;
     var near = 0.1;
@@ -184,21 +184,60 @@ function createCamera(x=300, y=500, z=1000) {
     return camera;
 }
 
+window.changeFOV = function() {
+    var value = document.getElementById("FOV").value;
+    camera.fov = Number(value);
+    camera.updateProjectionMatrix();
+}
+
+window.changeNear = function() {
+    var value = document.getElementById("Near").value;
+    camera.near = Number(value);
+    camera.updateProjectionMatrix();
+}
+
+window.changeFar = function() {
+    var value = document.getElementById("Far").value;
+    camera.far = Number(value);
+    camera.updateProjectionMatrix();
+}
+
 function createRenderer() {
-    var renderer = new THREE.WebGLRenderer({antialias: true});
+    var renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enable = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
+    renderer.setClearColor(new THREE.Color(0xa9a9a9), 0)
     return renderer;
 }
 
 function createGridHelper() {
-    var size = 1000;
+    var size = 5000;
     var division = 50;
     var gridHelper = new THREE.GridHelper(size, division, 0x888888);
     gridHelper.name = 'grid-helper';
     return gridHelper;
+}
+
+function onMouseDown(event) {
+    event.preventDefault();
+    if(event.button == 2) {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        var intersects = raycaster.intersectObjects(scene.children);
+        
+        // If there is any object need to use control at right click position
+        // Change to it
+
+        for(let i of intersects) {
+            if(i.object.name == 'poinlight-helper' || i.object.name == 'spotlight-helper' || i.object.name == 'main-obj' || i.object.name == 'plane') {
+                control_transform(i.object);
+                break;
+            }
+        }
+        render();
+    }
 }
 
 // Area for main-obj initialization and changing material
@@ -207,7 +246,6 @@ function createGridHelper() {
 
 window.removeGeometry = function(name='all') {
     if(name == 'all') {
-        console.log(control);
         control.detach();
         for(let i = 0; i < scene.children.length; ++i) {
             var obj = scene.children[i]
@@ -220,6 +258,8 @@ window.removeGeometry = function(name='all') {
                 gui.removeFolder(value);
             }
         }
+        addTexttoHeader('Done reset scene', 'auxiliary');
+        setTimeout(() => {addTexttoHeader(text, 'auxiliary')}, 3000);
     }
     else {
         if(name != 'main-obj') {
@@ -240,6 +280,8 @@ window.removeGeometry = function(name='all') {
                     }
                 }
             }
+            addTexttoHeader('Done reset' + name, 'auxiliary');
+            setTimeout(() => {addTexttoHeader(text, 'auxiliary')}, 3000);
         }
         else {
             // If it is remove main-obj
@@ -249,15 +291,14 @@ window.removeGeometry = function(name='all') {
     }
 }
 
+
 function CloneMesh(dummy_mesh) {
     // Inherit all name, position and animation that is currently on the old mesh 
     // Put it on the new one
     mesh.name = dummy_mesh.name;
-    if(!isBuffer) {
-        mesh.position.set(dummy_mesh.position.x, dummy_mesh.position.y, dummy_mesh.position.z);
-        mesh.rotation.set(dummy_mesh.rotation.x, dummy_mesh.rotation.y, dummy_mesh.rotation.z);
-        mesh.scale.set(dummy_mesh.scale.x, dummy_mesh.scale.y, dummy_mesh.scale.z);
-    }
+    mesh.position.set(dummy_mesh.position.x, dummy_mesh.position.y, dummy_mesh.position.z);
+    mesh.rotation.set(dummy_mesh.rotation.x, dummy_mesh.rotation.y, dummy_mesh.rotation.z);
+    mesh.scale.set(dummy_mesh.scale.x, dummy_mesh.scale.y, dummy_mesh.scale.z);
 	mesh.castShadow = true;
 	mesh.receiveShadow = true;
     scene.add(mesh);
@@ -297,7 +338,7 @@ function createColorAndPositionOfBuffer(setColor=false) {
 
 
 
-window.setMaterial = function(mat='phong', color=0xffffff, size=15, wireframe=true, transparent=true) {
+window.setMaterial = function(mat='point', color=0xffffff, size=3, wireframe=true, transparent=true) {
     // Getting the current main-obj on screen and setting it with the chosen material 
 
     mesh = scene.getObjectByName('main-obj');
@@ -310,13 +351,16 @@ window.setMaterial = function(mat='phong', color=0xffffff, size=15, wireframe=tr
         scene.remove(mesh);
 
         switch(type_material) {
+            case 'standard':
+                material = new THREE.MeshStandardMaterial({ color: color, side: THREE.DoubleSide });
+                break;
             case 'point':
-                material = new THREE.PointsMaterial({ size: size, vertexColors: true});
-                isBuffer = true;
+                material = new THREE.PointsMaterial({ size: size, vertexColors: true, side: THREE.DoubleSide, color: color});
+                //isBuffer = true;
                 break;
 
             case 'basic':
-                material = new THREE.MeshBasicMaterial({ color: color, wireframe: wireframe});
+                material = new THREE.MeshBasicMaterial({ color: color, wireframe: wireframe, side: THREE.DoubleSide});
                 break;
 
             case 'line':
@@ -324,57 +368,55 @@ window.setMaterial = function(mat='phong', color=0xffffff, size=15, wireframe=tr
                     color: color,
                     linewidth: 10,
                     linecap: 'round',
-                    linejoin: 'round'
+                    linejoin: 'round', 
+                    side: THREE.DoubleSide
                 });
                 break;
             case 'normal':
-                material = new THREE.MeshNormalMaterial({ color: color});
+                material = new THREE.MeshNormalMaterial({ color: color, side: THREE.DoubleSide});
 
             case 'phong':
-                material = new THREE.MeshPhongMaterial({color: color});
+                material = new THREE.MeshPhongMaterial({color: color, side: THREE.DoubleSide});
                 break;
 
             case 'lambert':
                 if (!light) 
-                    material = new THREE.MeshBasicMaterial({map: texture,  color: color });
+                    material = new THREE.MeshBasicMaterial({map: texture,  color: color, side: THREE.DoubleSide });
                 else
-                    material = new THREE.MeshLambertMaterial({map: texture, color: color});
+                    material = new THREE.MeshLambertMaterial({map: texture, color: color, side: THREE.DoubleSide});
                 break;
             default:
-                material = new THREE.MeshPhongMaterial({ color: color });
+                material = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
 
         }
-        // If it is point then use special technique
-        if(preMaterial != 'point')
-            createColorAndPositionOfBuffer()
-        else
-            createColorAndPositionOfBuffer(color);
 
         if(mat == 'point') {
-            dummy_mesh = new THREE.BufferGeometry();
-            dummy_mesh.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
-		    dummy_mesh.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
-            dummy_mesh.computeBoundingSphere();
-            mesh = new THREE.Mesh(dummy_mesh, material);
-            colors = [];
-            positions = [];
+            mesh = new THREE.Points(dummy_mesh.geometry, material);
         }
         else {
             mesh = new THREE.Mesh(dummy_mesh.geometry, material);
         }
-        preMaterial = mat;
         CloneMesh(dummy_mesh);
-        isBuffer = false;
+        render();
+    
     }
-    render();
+
+}
+
+window.uploadImage = function() {
+    console.log('Uploading');
+    document.getElementById('texture-obj').click();
 }
 
 window.setTexture = function(url='./graphics/textures/wood-walnut.jpg') {
     mesh = scene.getObjectByName('main-obj');
+
+    console.log('Changing');
+    
     if(mesh) {
         texture = new THREE.TextureLoader().load(url, render);
         texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-        window.setMaterial(4);
+        setMaterial('lambert');
     }
 }
 
@@ -383,8 +425,7 @@ window.setTexture = function(url='./graphics/textures/wood-walnut.jpg') {
 var obj_params = {
     color: 0xffffff
 }
-const loader = new THREE.FontLoader();
-
+const loader = new THREE.FontLoader(); 
 
 
 window.renderGeometry= function(id, fontName='Tahoma') {
@@ -395,9 +436,9 @@ window.renderGeometry= function(id, fontName='Tahoma') {
     if(mesh) {
         gui.removeFolder(objectFolder);
     }
-
+    //console.log(material);
     switch(id) {
-        case 'box':
+        case 'box':  
 			mesh = new THREE.Mesh(BoxGeometry, material);
 			break;
 		case 'sphere':
@@ -430,13 +471,9 @@ window.renderGeometry= function(id, fontName='Tahoma') {
         case 'circle':
             mesh = new THREE.Mesh(CircleGeometry, material);
 			break;
-        case 'ring':
-            mesh = new THREE.Mesh(RingGeometry, material);
-			break;
         case 'text':
             var text = document.getElementById('insertedText').value;
             loader.load( dic[fontName], 
-
                 function(font) {
                     var geometry = 	new THREE.TextGeometry(text, {
                         font: font,
@@ -496,9 +533,9 @@ var params = {
 window.displayPlane = function() {
     var checked = document.querySelector('input[id="plane"]:checked');
     if(checked) {
-        console.log('checked');
+        //console.log('checked');
         //Adding Plane to current env
-        planeMaterial = new THREE.MeshPhongMaterial(params);
+        planeMaterial = new THREE.MeshStandardMaterial(params);
         planeMaterial.side = THREE.DoubleSide;
         meshPlane = new THREE.Mesh(PlaneGeometry, planeMaterial);
 
@@ -506,7 +543,7 @@ window.displayPlane = function() {
         meshPlane.castShadow = true;
 
         meshPlane.rotation.x -= Math.PI / 2;
-        meshPlane.position.y = -30
+        meshPlane.position.y = -150
         meshPlane.name = 'plane'
         scene.add(meshPlane);
         control_transform(meshPlane);
@@ -520,7 +557,7 @@ window.displayPlane = function() {
             });
         ;
         
-        console.log(meshPlane);
+        //console.log(meshPlane);
     
         planeFolder.open();
 
@@ -528,7 +565,7 @@ window.displayPlane = function() {
         render();
     }
     else {
-        console.log('unchecked');
+        //console.log('unchecked');
         //Remove it from current env
         meshPlane = scene.getObjectByName('plane');
         if (meshPlane) {
@@ -545,7 +582,7 @@ function control_transform(mesh) {
     control.attach(mesh);
     scene.add(control);
 
-    text = 'T for translate, R for rotate, S for scale, L for Point/Spot Light ON, press spacebar for turn Point/Spot Light OFF'
+    text = 'T for translate, R for rotate, S for scale, L for Point Light ON, press spacebar for turn Point/Spot Light OFF, right click on object to move control.'
     addTexttoHeader(text);
 
     window.addEventListener('keydown', function (event) {
@@ -603,6 +640,7 @@ window.initBasicAnimation = function() {
     requestAnimationFrame(initBasicAnimation)
 }
 
+var idAnimation3;
 window.Animation3 = function() {
     var mesh = scene.getObjectByName('main-obj');
     if(mesh) {
@@ -610,10 +648,29 @@ window.Animation3 = function() {
         time += delta;
         mesh.position.y = 0.5 + Math.abs(Math.sin(time * 3)) * 2;;
         mesh.position.y = Math.cos(time) * 4;
-        requestAnimationFrame(Animation3)
+        idAnimation3 = requestAnimationFrame(Animation3)
     }
 }
 
+window.removeAnimation = function() {
+    var mesh = scene.getObjectByName('main-obj');
+    if(mesh) {
+        var ani1 = document.querySelector('input[id="ani1"]:checked');
+        var ani2 = document.querySelector('input[id="ani2"]:checked');
+        var ani3 = document.querySelector('input[id="ani3"]:checked');
+
+        if(ani1 || ani2 || ani3) {
+            document.getElementById("ani1").checked = false;
+            document.getElementById("ani2").checked = false;
+            document.getElementById("ani3").checked = false;
+        }
+
+        if(idAnimation3)
+            cancelAnimationFrame(idAnimation3);
+
+        mesh.rotation.set(0,0,0);
+    }
+}
 
 var customContainer = $('.gui').append($(gui.domElement));
 
@@ -638,7 +695,12 @@ function addTexttoHeader(text = 'Hello Word', id='auxiliary'){
 function createPointLight(color=0xffffff, intensity=2, name='light') {
     var light = new THREE.PointLight(new THREE.Color(color), intensity);
     light.castShadow = true;
-	light.position.set(0, 600, 0);
+	light.position.set(0, 250, 0);
+    light.shadow.mapSize.width = 512; // default
+    light.shadow.mapSize.height = 512; // default
+    light.shadow.camera.near = 0.5; // default
+    light.shadow.camera.far = 500; // default
+    light.shadow.focus = 1; // default
     light.name = name;
 
     return light
@@ -681,11 +743,15 @@ window.removeLight = function() {
     if(control.object) {
         if(control.object.name == 'light')
             // What if there is not mesh there
+            var len = scene.children.length;
             for (var i of scene.children) {
+                len--;
                 if(i.name == 'main-obj' || i.name == 'plane') {
                     control.object = i;
                     break;
                 } 
+                if(len == 0) 
+                    control.detach();
             }
     }
     
@@ -710,11 +776,21 @@ window.removeLight = function() {
 }
 
 // SpotLightHelper Light
-function createSpotLight(color=0xffffff, intensity=1, decay=1, name='light') {
-    var light = new THREE.SpotLight(new THREE.Color(color), intensity=intensity, decay=decay);
+var sLight_params = {
+    color: 0xffffff,
+    intensity: 2
+}
+
+function createSpotLight(color=0xffffff, intensity=2, decay=1, name='light') {
+    var light = new THREE.SpotLight(new THREE.Color(color), intensity=intensity);
     light.castShadow = true;
-    light.position.set(0, 70, 0);
+    light.position.set(0, 250, 0);
     light.name = name;
+    light.shadow.mapSize.width = 512; // default
+    light.shadow.mapSize.height = 512; // default
+    light.shadow.camera.near = 0.5; // default
+    light.shadow.camera.far = 500; // default
+    light.shadow.focus = 1; // default
     return light;
 }
 
@@ -735,13 +811,13 @@ window.setSpotLight= function() {
     scene.add(SpotLightHelper);
 
     SLightFolder = gui.addFolder('SpotLight');
-    SLightFolder.addColor( pLight_params, 'color')
+    SLightFolder.addColor( sLight_params, 'color')
         .onChange( function() {
-            light.color.set(new THREE.Color(pLight_params.color))
+            light.color.set(new THREE.Color(sLight_params.color))
         })
-    SLightFolder.add( pLight_params, 'intensity')
+    SLightFolder.add( sLight_params, 'intensity')
         .onChange( function() {
-            light.intensity = pLight_params.intensity;
+            light.intensity = sLight_params.intensity;
         })
     render();
 
@@ -785,15 +861,5 @@ window.displayAmbient = function() {
         removeAmbientLight();
     }
 }
-
-
-
-
-
-
-
-
-
-
 
 animate()

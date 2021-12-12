@@ -4,17 +4,17 @@
     <head>
         <title>SIMPLE-THE GROUP</title>
         <!-- Icon -->
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-        <link rel="manifest" href="/site.webmanifest">
+        <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
+        <link rel="manifest" href="./site.webmanifest">
 
         <meta charset = 'UTF-8'>
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
 
         <!-- Stylesheet -->
-        <link rel="stylesheet" href='css/main.css'>
+        <link rel="stylesheet" href='./css/main.css'>
 
         <!--CDN-->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -39,6 +39,7 @@
     </head>
     
     <body>
+        <div class='helper-gui'></div>
         <div class='gui'></div>
         <div id='auxiliary'></div>
         <div id='webgl' class='w-100 h-100 position-fixed'>
@@ -106,9 +107,6 @@
                                     <a href="#" onclick="renderGeometry('circle');">Circle</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="renderGeometry('ring');">Ring</a>
-                                </li>
-                                <li>
                                     <label for='insertedText'>Text Geometry</label>
                                     <br>
                                     <input type='text' id='insertedText' /> <button class='dark' onclick="renderGeometry('text');">Create</button>
@@ -121,6 +119,9 @@
                                 class="dropdown-toggle">Surface</a>
                             <ul class="collapse list-unstyled" id="pageSubmenu">
                                 <li>
+                                    <a href="#" onclick="setMaterial('standard');">Standard</a>
+                                </li>
+                                <li>
                                     <a href="#" onclick="setMaterial('point');">Point</a>
                                 </li>
                                 <li>
@@ -131,6 +132,10 @@
                                 </li>
                                 <li>
                                     <a href="#" onclick="setMaterial('phong');">Solid</a>
+                                </li>
+                                <li>
+                                    <a href="#" onClick='uploadImage();'>Special Texture</a>     
+                                    <input type='file' accept="image/*" id='texture-obj' style='display:none;' onChange="setTexture(window.URL.createObjectURL(this.files[0]))"/> 
                                 </li>
                                 <!-- <li>
                                     <input type="file" accept="image/*" id="texture" style="display: none;"
@@ -160,15 +165,15 @@
                             <ul class="collapse list-unstyled" id="animationSubmenu">
                                 <li>
                                     <input type="checkbox" value="ani1" name='ani1' id="ani1" onChange="initBasicAnimation()">
-                                    <label class="custom-control-label" for="ani1">Animation 1: rotate x</label>
+                                    <label for="anim1" onClick="document.getElementById('ani1').click()">Animation 1: rotate x</label>
                                 </li>
                                 <li>
                                     <input type="checkbox" value="ani2" name='ani2' id="ani2" onChange="initBasicAnimation()">
-                                    <label class="custom-control-label" for="ani2">Animation 2: rotate y</label>
+                                    <label for="anim2" onClick="document.getElementById('ani2').click()">Animation 2: rotate y</label>
                                 </li>
                                 <li>
                                     <input type="checkbox" value="ani3" name='ani3' id="ani3" onChange="initBasicAnimation()">
-                                    <label for="anim3">Animation 3: rotate z</label>
+                                    <label for="anim3" onClick="document.getElementById('ani3').click()">Animation 3: rotate z</label>
                                 </li>
                                 <li>
                                     <a href="#" class='no-decoration' onclick="Animation3()">Animation 3: Floating</a>
@@ -177,7 +182,31 @@
                                     <a href="#" class='no-decoration' onclick="Animation4()">Animation 4</a>
                                 </li>
                                 <li>
-                                    <a href="#" class='no-decoration' onclick="ResetAnimation()">Remove Animation</a>
+                                    <a href="#" class='no-decoration' onclick="removeAnimation()">Remove Animation</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            <a href="#cameraSubmenu" data-toggle="collapse" aria-expanded="false"
+                                class="dropdown-toggle">Camera</a>
+                            <ul class="collapse list-unstyled" id="cameraSubmenu">
+                                <li class='custom-camera-range'>
+                                    <label for='FOV'>FOV</label>
+                                    <input type='range' class='custom-range' id='FOV' value='75' 
+                                    min="0" max="180" step="1" onChange="changeFOV()" oninput="FOVOutput.value = FOV.value"/>
+                                    <output name="FOVOutput" id="FOVOutput">75</output>
+                                </li>
+                                <li class='custom-camera-range'>
+                                    <label for='Near'>Near</label>
+                                    <input type='range' class='custom-range' id='Near'  value='0.1'
+                                    min="0.1" max="450" onChange="changeNear()" oninput="NearOutput.value = Near.value"/>
+                                    <output name="NearOutput" id="NearOutput">0.1</output>
+                                </li>
+                                <li class='custom-camera-range'>
+                                    <label for='Far'>Far</label>
+                                    <input type='range' class='custom-range' id='Far' value='10000' 
+                                    min="500" max="20000" step="1" onChange="changeFar()" oninput="FarOutput.value = Far.value"/>
+                                    <output name="FarOutput" id="FarOutput">10000</output>
                                 </li>
                             </ul>
                         </li>

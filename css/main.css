@@ -11,7 +11,7 @@ body {
 }
 
 html {
-    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Raleway', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 #webgl {
@@ -28,7 +28,7 @@ html {
 }
 
 .title {
-    font-size: 1rem;
+    font-size: 1.25rem;
     font-weight: bold;
     font-family: 'Merriweather', serif; 
 }
@@ -278,4 +278,33 @@ li a:hover{
     width: 100%;
     margin-bottom: 3%;
     background-color: rgb(31, 68, 233);
+    font-family: 'Raleway', sans-serif;
+    font-weight: bold;
+}
+
+.helper-gui {
+
+    position: absolute;
+    top: 0px;
+    right: 250px;
+    background-color: 'pink';
+    z-index: 10000;
+
+}
+
+li.custom-camera-range label{
+    padding: 5px;
+    display: block;
+}
+li.custom-camera-range input{
+    display: block;
+    margin-left: 30px;
+}
+
+output {
+    display: block;
+    position: relative;
+    color: rgb(134, 126, 126);
+    font-size: .75rem;
+    margin-left: 140px;
 }
