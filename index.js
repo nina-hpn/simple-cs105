@@ -205,7 +205,7 @@ window.changeFar = function() {
 function createRenderer() {
     var renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enable = true;
+    renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.setClearColor(new THREE.Color(0xa9a9a9), 0)
     return renderer;
