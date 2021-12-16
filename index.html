@@ -185,7 +185,42 @@
                                     <a href="#" class='no-decoration' onclick="Animation4()">Animation 5: Going in Round</a>
                                 </li>
                                 <li>
+                                    <a href="#" class='no-decoration' onclick="Animation5()">Animation 6: Going Zic Zac</a>
+                                </li>
+                                <li>
                                     <a href="#" class='no-decoration' onclick="removeAnimation()">Remove Animation</a>
+                                </li>
+                                <li id='empty-span-animation'>
+                                    <div>
+                                        <label for='amplitude' id='label_amplitude' style='display:none'>Amplitude</label>
+                                    
+                                        <input type='range' id='amplitude' onChange = "setAmplitude(this.value)" style="display:none"
+                                        min = '0' max = '1000' value='500' oninput="outAmplitude.value = amplitude.value"/>
+                                        <output name="outAmplitude" id='outAmplitude' style='display:none'>500</output>
+                                    </div>
+                                    <div>
+                                        <label for='x' id='label_x' style='display:none'>X</label>
+
+                                        <input type='range' id='x' onChange = "setX(this.value)" style="display:none"
+                                            min = '0' max = '0.7' value='0.01' step="0.01" oninput="outx.value = x.value"/>
+                                        <output name="outx" id='outx' style='display:none'>0.01</output>
+                                    </div>
+
+                                    <div>
+                                        <label for='y' id='label_y' style='display:none'>Y</label>
+
+                                        <input type='range' id='y' onChange = "setY(this.value)" style="display:none"
+                                            min = '0' max = '0.7' value='0.01' step="0.01" oninput="outy.value = y.value"/>
+                                        <output name="outy" id='outy' style='display:none'>0.01</output>
+                                    </div>
+
+                                    <div>
+                                        <label for='z' id='label_z' style='display:none'>Z</label>
+
+                                        <input type='range' id='z' onChange = "setZ(this.value)" style="display:none"
+                                            min = '0' max = '0.7' value='0.01' step="0.01" oninput="outz.value = z.value"/>
+                                        <output name="outz" id='outz' style='display:none'>0.01</output>
+                                    </div>
                                 </li>
                             </ul>
                         </li>

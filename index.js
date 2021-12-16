@@ -732,6 +732,19 @@ function animate() {
     stats.end();
 }
 
+function displayRange(id = 'x') {
+    document.getElementById(id).style = "display:block";
+    document.getElementById('out' + id).style = "display:visible;"
+    document.getElementById('label_' + id).style = "display:visible;"
+}
+
+function notDisplayRange(id = 'x') {
+    document.getElementById(id).style = "display:none";
+    document.getElementById('out' + id).style = "display:none";
+    document.getElementById('label_' + id).style = "display:none";
+}
+
+var ax = 0.01, ay=0.01, az=0.01;
 window.initBasicAnimation = function() {
     // See if any box of animation has been checked
     var ani1 = document.querySelector('input[id="ani1"]:checked');
@@ -740,58 +753,121 @@ window.initBasicAnimation = function() {
 
     var mesh = scene.getObjectByName('main-obj');
     if(mesh) {
-        if(ani1) 
-            mesh.rotation.x += 0.01;
-        else
-            mesh.rotation.x = 0
+        if(ani1) {
+            mesh.rotation.x += ax;
+            displayRange('x');
+        }
+        else{
+            mesh.rotation.x = 0;
+            notDisplayRange('x');
+        }
 
-        if(ani2)
-            mesh.rotation.y += 0.01;
-        else 
-            mesh.rotation.y = 0
+        if(ani2){
+            mesh.rotation.y += ay;
+            displayRange('y');
+        }
+        else {
+            mesh.rotation.y = 0;
+            notDisplayRange('y');
+        }
 
-        if(ani3)
-            mesh.rotation.z += 0.01
-        else 
-            mesh.rotation.z = 0
+        if(ani3){
+            mesh.rotation.z += az;
+            displayRange('z');
+        }
+        else {
+            mesh.rotation.z = 0;
+            notDisplayRange('z');
+        }
 
     }
     requestAnimationFrame(initBasicAnimation)
 }
 
+window.setX = function(num) {
+    ax = Number(num);
+}
+
+window.setY = function(num) {
+    ay = Number(num);
+}
+
+window.setZ = function(num) {
+    az = Number(num);
+}
+
+
+var amplitude = 500;
 var idAnimation3;
+
+function displayAmplitude() {
+    document.getElementById('amplitude').style = "display:block";
+    document.getElementById('outAmplitude').style = "display:visible;"
+    document.getElementById('label_amplitude').style = "display:visible;"
+}
+
+
+
+window.setAmplitude = function(amp) {
+    amplitude = amp;
+}
+
 window.Animation3 = function() {
+    // Floating affect
     var mesh = scene.getObjectByName('main-obj');
-    if(idAnimation4)
-        cancelAnimationFrame(idAnimation4);
+    removeAnimation(5);
     if(mesh) {
         delta = clock.getDelta();
         time += delta;
-        mesh.position.x = 0.5 + Math.abs(Math.sin(time * 3)) * 2;;
-        mesh.position.y = Math.cos(time) * 40;
+        mesh.position.x = 0.5 + Math.abs(Math.sin(time * 3)) * amplitude / 50;;
+        mesh.position.y = Math.cos(time) * amplitude / 20;
+        displayAmplitude();
         idAnimation3 = requestAnimationFrame(Animation3)
     }
 }
 
 var idAnimation4;
 window.Animation4 = function() {
+    // Going in round
     var mesh = scene.getObjectByName('main-obj');
-    if(idAnimation3)
-        cancelAnimationFrame(idAnimation3);
+    removeAnimation(4);
     if(mesh) {
         delta = clock.getDelta();
         time += delta;
         mesh.rotation.y += 0.03;
 
-        mesh.position.x = 50*Math.cos(time) + 0;
-        mesh.position.z = 50*Math.sin(time) + 0;
+        mesh.position.x = amplitude*Math.cos(time) + 0;
+        mesh.position.z = amplitude*Math.sin(time) + 0;
+        displayAmplitude();
         idAnimation4 = requestAnimationFrame(Animation4)
     }
 }
 
-window.removeAnimation = function() {
+var idAnimation5;
+var go = true;
+window.Animation5 = function() {
+    // Going in zic zac
     var mesh = scene.getObjectByName('main-obj');
+    removeAnimation(5);
     if(mesh) {
+        delta = clock.getDelta();
+        time += delta;
+        mesh.position.x = amplitude / 2 * Math.sin(time);
+
+        if(time % 2 == 1) {
+            mesh.position.z += amplitude / 150;
+        } 
+        else {
+            mesh.position.z -= amplitude / 150;
+        }
+        displayAmplitude();
+        idAnimation5 = requestAnimationFrame(Animation5);
+    }
+}
+
+window.removeAnimation = function(id='all') {
+    var mesh = scene.getObjectByName('main-obj');
+    if(mesh && id == 'all') {
         var ani1 = document.querySelector('input[id="ani1"]:checked');
         var ani2 = document.querySelector('input[id="ani2"]:checked');
         var ani3 = document.querySelector('input[id="ani3"]:checked');
@@ -806,8 +882,24 @@ window.removeAnimation = function() {
             cancelAnimationFrame(idAnimation3);
         if(idAnimation4)
             cancelAnimationFrame(idAnimation4);
+        if(idAnimation5)
+            cancelAnimationFrame(idAnimation5);
 
         mesh.rotation.set(0,0,0);
+
+        document.getElementById('amplitude').style = "display:none";
+        document.getElementById('outAmplitude').style = "display:none"
+        document.getElementById('label_amplitude').style = "display:none"
+    }
+    else if (mesh && id != 'all') {
+        // Here the id is what we want to keep
+        var lis = [false, false, false, idAnimation3, idAnimation4, idAnimation5];
+        for (let i = 3; i <= lis.length; ++i) {
+            if(i != id + 1) {
+                if(lis[i])
+                    cancelAnimationFrame(lis[i])
+            }
+        }
     }
 }
 

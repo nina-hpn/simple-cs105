@@ -263,6 +263,7 @@ list-style: none;
 
 label {
     color: rgba(255, 255, 255, 0.7);
+    display: block;
 }
 
 .no-decoration{
@@ -320,4 +321,11 @@ output {
     opacity: 70%;
     color: blue;
     transition: 0.3s;
+}
+#outAmplitude, #outx, #outy, #outz {
+    margin-left: 140px;
+    position: relative;
+    color: rgb(134, 126, 126);
+    font-size: .75rem;
+    margin-left: 140px;
 }
