@@ -19,7 +19,8 @@ var clock = new THREE.Clock();
 var scene, camera, renderer;
 var cameraHelper;
 var mesh, texture;
-var material = new THREE.PointsMaterial({ size: 3, vertexColors: true, side: THREE.DoubleSide, color: 0xffffff});
+var material = new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.DoubleSide });;
+var pointMaterial = false;
 var specialMaterial, preMaterial = false, isBuffer = false;
 var planeMaterial;
 var time = 0, delta = 0;
@@ -86,8 +87,7 @@ var OctahedronGeometry =  new THREE.OctahedronGeometry(100);
 var TetrahedronGeometry = new THREE.TetrahedronGeometry(100);
 var PlaneGeometry = new THREE.PlaneGeometry(2000, 2000);
 var CircleGeometry = new THREE.CircleGeometry(100,150);
-var TextGeometry;
-
+var TextGeometry, BufferGeometry;
 
 
 init();
@@ -356,30 +356,24 @@ window.setMaterial = function(mat='point', obj='main-obj',color=0xffffff, size=3
             switch(type_material) {
                 case 'standard':
                     material = new THREE.MeshStandardMaterial({ color: color, side: THREE.DoubleSide });
+                        pointMaterial = false;
                     break;
                 case 'point':
                     material = new THREE.PointsMaterial({ size: size, vertexColors: true, side: THREE.DoubleSide, color: color});
-                    //isBuffer = true;
+                    pointMaterial = true;
                     break;
 
                 case 'basic':
                     material = new THREE.MeshBasicMaterial({ color: color, wireframe: wireframe, side: THREE.DoubleSide});
+                        pointMaterial = false;
                     break;
 
-                case 'line':
-                    material = new THREE.LineBasicMaterial( {
-                        color: color,
-                        linewidth: 10,
-                        linecap: 'round',
-                        linejoin: 'round', 
-                        side: THREE.DoubleSide
-                    });
-                    break;
                 case 'normal':
                     material = new THREE.MeshNormalMaterial({ color: color, side: THREE.DoubleSide});
 
                 case 'phong':
                     material = new THREE.MeshPhongMaterial({color: color, side: THREE.DoubleSide});
+                        pointMaterial = false;
                     break;
 
                 case 'lambert':
@@ -387,7 +381,8 @@ window.setMaterial = function(mat='point', obj='main-obj',color=0xffffff, size=3
                         material = new THREE.MeshBasicMaterial({map: texture,  color: color, side: THREE.DoubleSide });
                     else
                         material = new THREE.MeshLambertMaterial({map: texture, color: color, side: THREE.DoubleSide});
-                    break;
+                        pointMaterial = false;
+                        break;
                 default:
                     material = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
 
@@ -435,6 +430,7 @@ window.uploadImage = function(id='texture-obj') {
 
 window.setTexture = function(url='./graphics/textures/wood-walnut.jpg', obj='main-obj') {
     mesh = scene.getObjectByName('main-obj');
+    console.log(url);
     if(obj == 'main-obj') {  
         if(mesh) {
             texture = new THREE.TextureLoader().load(url, render);
@@ -449,6 +445,61 @@ window.setTexture = function(url='./graphics/textures/wood-walnut.jpg', obj='mai
             setMaterial('lambert', obj=obj);
         }
     }
+}
+
+window.uploadGeometry = function(id) {
+    console.log('Uploading new Geometry');
+    document.getElementById(id).click();
+}
+
+window.setLoaderGeometry = function(url='./graphics/buffergeometries/suzzane_buffergeometry.json') {
+    mesh = scene.getObjectByName('main-obj');
+    console.log(url);
+
+    if(mesh) {
+        scene.remove(mesh);
+        control.detach();
+        gui.removeFolder(objectFolder);
+
+    }
+    
+    var geometry = new THREE.BufferGeometryLoader().load(
+        // resource URL
+        url,
+
+        //onLoad callback 
+        function ( geometry ) {
+            geometry.computeVertexNormals();
+            mesh = new THREE.Mesh( geometry, material);
+            mesh.name = 'main-obj';
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            scene.add(mesh);
+            control_transform(mesh);
+            //Adding GUI for control 
+            objectFolder = gui.addFolder('Object');
+
+            // Change mesh color
+            objectFolder.addColor( obj_params, 'color')
+                .onChange(function() {
+                    mesh.material.color.set( new THREE.Color(obj_params.color) );
+                    mesh.material.needsUpdate = true;
+                });
+            setTimeout(addTexttoHeader('Note that the loaded geometry is a bit too small, you can scale it using S'), 5000);
+
+
+
+        },
+        function ( xhr ) {
+            console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
+        },
+
+        // onError callback
+        function ( err ) {
+            console.log( err );
+        }
+
+    );
 }
 
 // Define some params control and text loader
@@ -470,37 +521,71 @@ window.renderGeometry= function(id, fontName='Tahoma') {
     //console.log(material);
     switch(id) {
         case 'box':  
-			mesh = new THREE.Mesh(BoxGeometry, material);
+            if(pointMaterial)
+                mesh = new THREE.Points(BoxGeometry, material);
+            else
+                mesh = new THREE.Mesh(BoxGeometry, material);
 			break;
 		case 'sphere':
-			mesh = new THREE.Mesh(SphereGeometry, material);
+            if(pointMaterial)
+                mesh = new THREE.Points(SphereGeometry, material);
+			else 
+                mesh = new THREE.Mesh(SphereGeometry, material);
 			break;
 		case 'cone':
-			mesh = new THREE.Mesh(ConeGeometry, material);
+            if(pointMaterial)
+                mesh = new THREE.Points(ConeGeometry, material);
+			else
+                mesh = new THREE.Mesh(ConeGeometry, material);
 			break;
 		case 'cylinder':
-			mesh = new THREE.Mesh(CylinderGeometry, material);
+            if(pointMaterial)
+                mesh = new THREE.Points(CylinderGeometry, material);
+			else
+                mesh = new THREE.Mesh(CylinderGeometry, material);
 			break;
 		case 'torus':
-			mesh = new THREE.Mesh(TorusGeometry, material);
+            if(pointMaterial)
+                mesh = new THREE.Points(TorusGeometry, material);
+			else
+                mesh = new THREE.Mesh(TorusGeometry, material);
 			break;
 		case 'tea-pot':
-			mesh = new THREE.Mesh(TeapotGeometry, material);
+            if(pointMaterial)
+                mesh = new THREE.Points(TeapotGeometry, material);
+			else
+                mesh = new THREE.Mesh(TeapotGeometry, material);
 			break;
 		case 'icosa':
-			mesh = new THREE.Mesh(IcosahedronGeometry, material);
+            if(pointMaterial)
+                mesh = new THREE.Points(IcosahedronGeometry, material);
+            else
+			    mesh = new THREE.Mesh(IcosahedronGeometry, material);
 			break;
 		case 'dode':
-			mesh = new THREE.Mesh(DodecahedronGeometry, material);
+            if(pointMaterial)
+                mesh = new THREE.Points(DodecahedronGeometry, material);
+			
+            else
+                mesh = new THREE.Mesh(DodecahedronGeometry, material);
 			break;
 		case 'octa':
-			mesh = new THREE.Mesh(OctahedronGeometry, material);
+            if(pointMaterial)
+                mesh = new THREE.Points(OctahedronGeometry, material);
+            else
+			    mesh = new THREE.Mesh(OctahedronGeometry, material);
 			break;
 		case 'tetra':
-			mesh = new THREE.Mesh(TetrahedronGeometry, material);
+            if(pointMaterial)
+                mesh = new THREE.Points(TetrahedronGeometry, material);
+            else
+			    mesh = new THREE.Mesh(TetrahedronGeometry, material);
 			break;
         case 'circle':
-            mesh = new THREE.Mesh(CircleGeometry, material);
+            if(pointMaterial)
+                mesh = new THREE.Points(CircleGeometry, material);
+            else
+                esh = new THREE.Mesh(CircleGeometry, material);
 			break;
         case 'text':
             var text = document.getElementById('insertedText').value;
@@ -519,7 +604,10 @@ window.renderGeometry= function(id, fontName='Tahoma') {
                         bevelSegments: bevelSegments
                     })
                     geometry.computeBoundingBox();
-                    mesh = new THREE.Mesh(geometry, material);
+                    if(pointMaterial)
+                        mesh = new THREE.Points(geometry, material);
+                    else
+                        mesh = new THREE.Mesh(geometry, material);
                     mesh.name = 'main-obj';
                     mesh.castShadow = true;
                     mesh.receiveShadow = true;

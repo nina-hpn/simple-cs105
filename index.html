@@ -113,6 +113,10 @@
                                     <br>
                                     <input type='text' id='insertedText' /> <button class='dark' onclick="renderGeometry('text');">Create</button>
                                 </li>
+                                <li>
+                                    <a href="#" onclick="uploadGeometry('geometry_loader')">Load new Geometry</a>
+                                    <input type='file' id='geometry_loader' style='display:none;' onChange="setLoaderGeometry(window.URL.createObjectURL(this.files[0]))"/>
+                                </li>
                             </ul>
                         </li>
 
@@ -128,9 +132,6 @@
                                 </li>
                                 <li>
                                     <a href="#" onclick="setMaterial('basic');">Wireframe</a>
-                                </li>
-                                <li>
-                                    <a href="#" onclick="setMaterial('line');">Lines</a>
                                 </li>
                                 <li>
                                     <a href="#" onclick="setMaterial('phong');">Solid</a>
