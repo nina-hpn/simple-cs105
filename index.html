@@ -233,32 +233,7 @@
                                 </li>
                             </ul>
                         </li>
-                        <li>
-                            <a href="#cameraSubmenu" data-toggle="collapse" aria-expanded="false"
-                                class="dropdown-toggle">Camera</a>
-                            <ul class="collapse list-unstyled" id="cameraSubmenu">
-                                <li class='custom-camera-range'>
-                                    <label for='FOV'>FOV</label>
-                                    <input type='range' class='custom-range' id='FOV' value='75' 
-                                    min="0" max="180" step="1" onChange="changeFOV()" oninput="FOVOutput.value = FOV.value"/>
-                                    <output name="FOVOutput" id="FOVOutput">75</output>
-                                </li>
-                                <li class='custom-camera-range'>
-                                    <label for='Near'>Near</label>
-                                    <input type='range' class='custom-range' id='Near'  value='0.1'
-                                    min="0.1" max="450" onChange="changeNear()" oninput="NearOutput.value = Near.value"/>
-                                    <output name="NearOutput" id="NearOutput">0.1</output>
-                                </li>
-                                <li class='custom-camera-range'>
-                                    <label for='Far'>Far</label>
-                                    <input type='range' class='custom-range' id='Far' value='10000' 
-                                    min="500" max="20000" step="1" onChange="changeFar()" oninput="FarOutput.value = Far.value"/>
-                                    <output name="FarOutput" id="FarOutput">10000</output>
-                                </li>
-                            </ul>
-                        </li>
                     </ul>
-                
                 </div>
             </nav>
         </div>

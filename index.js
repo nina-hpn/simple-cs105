@@ -19,7 +19,8 @@ var clock = new THREE.Clock();
 var scene, camera, renderer;
 var cameraHelper;
 var mesh, texture;
-var material = new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.DoubleSide });;
+var material = new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+var defaultMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.DoubleSide });
 var pointMaterial = false;
 var specialMaterial, preMaterial = false, isBuffer = false;
 var backgroundTexture;
@@ -60,6 +61,7 @@ var control, orbit, gridHelper;
 var mouse = new THREE.Vector2();
 
 var planeFolder, objectFolder, AMBLightFolder, PLightFolder, cameraFolder, SLightFolder;
+var widSeg, heiSeg, depSeg, radSeg, tubSeg, seg, detail;
 
 //All about the lights
 var raycaster, PointLightHelper, meshPlane, light, ambientLight, SpotLightHelper;
@@ -111,6 +113,21 @@ function init() {
     cameraFolder.add(camera.position, 'x', -1000, 1000);
     cameraFolder.add(camera.position, 'y', -1000, 1000);
     cameraFolder.add(camera.position, 'z', -1000, 1000);
+
+    cameraFolder.add(camera, 'fov', 0, 180)
+        .onChange(function(value) {
+            changeFOV(value);
+        })
+
+    cameraFolder.add(camera, 'near', 0.1, 450)
+        .onChange(function(value) {
+            changeNear(value);
+        });
+    
+    cameraFolder.add(camera, 'far', 500, 20000)
+        .onChange(function(value) {
+            changeFar(value);
+        });
 
     cameraFolder.open()
     
@@ -185,22 +202,40 @@ function createCamera(x=300, y=300, z=400) {
     return camera;
 }
 
-window.changeFOV = function() {
-    var value = document.getElementById("FOV").value;
-    camera.fov = Number(value);
-    camera.updateProjectionMatrix();
+window.changeFOV = function(value = false) {
+    if (!value) {
+        var value = document.getElementById("FOV").value;
+        camera.fov = Number(value);
+        camera.updateProjectionMatrix();
+    }
+    else {
+        camera.fov = value;
+        camera.updateProjectionMatrix();
+    }
 }
 
-window.changeNear = function() {
-    var value = document.getElementById("Near").value;
-    camera.near = Number(value);
-    camera.updateProjectionMatrix();
+window.changeNear = function(value = false) {
+    if(!value) {
+        var value = document.getElementById("Near").value;
+        camera.near = Number(value);
+        camera.updateProjectionMatrix();
+    }
+    else {
+        camera.near = value;
+        camera.updateProjectionMatrix();
+    }
 }
 
-window.changeFar = function() {
-    var value = document.getElementById("Far").value;
-    camera.far = Number(value);
-    camera.updateProjectionMatrix();
+window.changeFar = function(value = false) {
+    if(!value) {
+        var value = document.getElementById("Far").value;
+        camera.far = Number(value);
+        camera.updateProjectionMatrix();
+    }
+    else {
+        camera.far = value;
+        camera.updateProjectionMatrix();
+    }
 }
 
 function createRenderer() {
@@ -260,6 +295,8 @@ window.removeGeometry = function(name='all') {
             }
         }
         scene.background = new THREE.Color('black');
+        material = defaultMaterial;
+        planeMaterial = defaultMaterial;
         addTexttoHeader('Done reset scene', 'auxiliary');
         setTimeout(() => {addTexttoHeader(text, 'auxiliary')}, 3000);
     }
@@ -409,10 +446,7 @@ window.setMaterial = function(mat='point', obj='main-obj',color=0xffffff, size=3
 
             switch(type_material) {
                 case 'lambert':
-                    if (!light) 
-                        planeMaterial = new THREE.MeshBasicMaterial({map: texture,  color: color, side: THREE.DoubleSide });
-                    else
-                        planeMaterial = new THREE.MeshLambertMaterial({map: texture, color: color, side: THREE.DoubleSide});
+                    planeMaterial = new THREE.MeshLambertMaterial({map: texture, color: color, side: THREE.DoubleSide});
                     break;
                 default:
                     planeMaterial = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
@@ -426,13 +460,12 @@ window.setMaterial = function(mat='point', obj='main-obj',color=0xffffff, size=3
 }
 
 window.uploadImage = function(id='texture-obj') {
-    console.log('Uploading');
     document.getElementById(id).click();
 }
 
 window.setTexture = function(url='./graphics/textures/wood-walnut.jpg', obj='main-obj') {
     mesh = scene.getObjectByName('main-obj');
-    console.log(url);
+    meshPlane = scene.getObjectByName('plane');
     if(obj == 'main-obj') {  
         if(mesh) {
             texture = new THREE.TextureLoader().load(url, render);
@@ -440,8 +473,8 @@ window.setTexture = function(url='./graphics/textures/wood-walnut.jpg', obj='mai
             setMaterial('lambert');
         }
     }
-    else if(obj == 'plane') {
-        if(mesh) {
+    if(obj == 'plane') {
+        if(plane) {
             texture = new THREE.TextureLoader().load(url, render);
             texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
             setMaterial('lambert', obj=obj);
@@ -598,7 +631,7 @@ window.renderGeometry= function(id, fontName='Tahoma') {
             if(pointMaterial)
                 mesh = new THREE.Points(CircleGeometry, material);
             else
-                esh = new THREE.Mesh(CircleGeometry, material);
+                mesh = new THREE.Mesh(CircleGeometry, material);
 			break;
         case 'text':
             var text = document.getElementById('insertedText').value;
@@ -643,7 +676,6 @@ window.renderGeometry= function(id, fontName='Tahoma') {
         mesh.receiveShadow = true;
         control_transform(mesh);
     }
-
     //Adding GUI for control 
     objectFolder = gui.addFolder('Object');
 
@@ -653,7 +685,33 @@ window.renderGeometry= function(id, fontName='Tahoma') {
             mesh.material.color.set( new THREE.Color(obj_params.color) );
             mesh.material.needsUpdate = true;
         });
-    objectFolder.open();
+    objectFolder.add(mesh, 'visible');
+    if (mesh.geometry.parameters){
+        
+        if(mesh.geometry.parameters.widthSegments) {
+            objectFolder.add(mesh.geometry.parameters, 'widthSegments', 1, 50)
+            .listen()
+            .onChange(function(value) {
+                console.log(value)
+            });
+        }
+        if(mesh.geometry.parameters.heightSegments) {
+            objectFolder.add(mesh.geometry.parameters, 'heightSegments', 1, 50).listen();
+        }
+        if(mesh.geometry.parameters.depthSegments) {
+            objectFolder.add(mesh.geometry.parameters, 'depthSegments', 1, 50).listen();
+        }
+        if(mesh.geometry.parameters.radialSegments) {
+            objectFolder.add(mesh.geometry.parameters, 'radialSegments', 1, 50).listen();
+        }
+        if(mesh.geometry.parameters.tubularSegments) {
+            objectFolder.add(mesh.geometry.parameters, 'tubularSegments', 1, 50).listen();
+        }
+        if(mesh.geometry.parameters.segments) {
+            objectFolder.add(mesh.geometry.parameters, 'segments', 1, 50).listen();
+        }
+    }
+
     render();
 }
 
@@ -690,10 +748,6 @@ window.displayPlane = function() {
             });
         ;
         
-        //console.log(meshPlane);
-    
-        planeFolder.open();
-
         
         render();
     }
@@ -976,9 +1030,9 @@ window.setPointLight= function() {
         .onChange( function() {
             light.color.set(new THREE.Color(pLight_params.color))
         })
-    PLightFolder.add( pLight_params, 'intensity')
-        .onChange( function() {
-            light.intensity = pLight_params.intensity;
+    PLightFolder.add( light, 'intensity', 0, 10)
+        .onChange( function(value) {
+            light.intensity = value;
         })
     render();
 
@@ -1060,10 +1114,10 @@ window.setSpotLight= function() {
         .onChange( function() {
             light.color.set(new THREE.Color(sLight_params.color))
         })
-    SLightFolder.add( sLight_params, 'intensity')
-        .onChange( function() {
-            light.intensity = sLight_params.intensity;
-        })
+    SLightFolder.add( light, 'intensity', 0, 10)
+        .onChange( function(value) {
+            light.intensity = value;
+        });
     render();
 
 }
