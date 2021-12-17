@@ -72,6 +72,20 @@
                             <label for='ambient'>Ambient Light</label>
                         </li>
                         <li>
+                            <a href='#backgroundSubmenu' data-toggle='collapse' aria-expanded="false"
+                                class='dropdown-toggle'>Background</a>
+                            <ul class='collapse list-unstyled' id='backgroundSubmenu'>
+                                <li>
+                                   <label for='bg-color'>Color</label> 
+                                   <input type='color' id='bg-color' name='bg-color' onchange="setBGColor(this.value)"/>
+                                </li>
+                                <li>
+                                    <a href='#' onclick='uploadImage("bg-texture")'>Texture</a>
+                                    <input type='file' accept="image/*" id='bg-texture' style='display:none;' onChange="setTexture(window.URL.createObjectURL(this.files[0]),'background')"/> 
+                                 </li>
+                            </ul>
+                        </li>
+                        <li>
                             <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false"
                                 class="dropdown-toggle">Geometry</a>
                             <ul class="collapse list-unstyled" id="homeSubmenu">
@@ -140,11 +154,6 @@
                                     <a href="#" onClick='uploadImage("texture-obj");'>Special Texture</a>     
                                     <input type='file' accept="image/*" id='texture-obj' style='display:none;' onChange="setTexture(window.URL.createObjectURL(this.files[0]))"/> 
                                 </li>
-                                <!-- <li>
-                                    <input type="file" accept="image/*" id="texture" style="display: none;"
-                                        onchange="SetTexture(window.URL.createObjectURL(this.files[0]))" />
-                                    <a href="#" name="button" onclick="Uploadimage();">Texture</a>
-                                </li> -->
                             </ul>
                         </li>
                         <li>

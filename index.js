@@ -22,6 +22,7 @@ var mesh, texture;
 var material = new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.DoubleSide });;
 var pointMaterial = false;
 var specialMaterial, preMaterial = false, isBuffer = false;
+var backgroundTexture;
 var planeMaterial;
 var time = 0, delta = 0;
 
@@ -258,6 +259,7 @@ window.removeGeometry = function(name='all') {
                 gui.removeFolder(value);
             }
         }
+        scene.background = new THREE.Color('black');
         addTexttoHeader('Done reset scene', 'auxiliary');
         setTimeout(() => {addTexttoHeader(text, 'auxiliary')}, 3000);
     }
@@ -445,6 +447,17 @@ window.setTexture = function(url='./graphics/textures/wood-walnut.jpg', obj='mai
             setMaterial('lambert', obj=obj);
         }
     }
+    if(obj == 'background') {
+        backgroundTexture = new THREE.TextureLoader();
+        backgroundTexture.load(url, function(texture) {
+            scene.background = texture;
+        })
+    }
+}
+
+window.setBGColor = function(color) {
+    color = new THREE.Color(color);
+    scene.background = color;
 }
 
 window.uploadGeometry = function(id) {
@@ -617,6 +630,7 @@ window.renderGeometry= function(id, fontName='Tahoma') {
 			break;
         case 'tree':
             mesh = new THREE.Mesh(TreeGeometry, material);
+
         default:
             mesh = new THREE.Mesh(BoxGeometry, material);
             break;
