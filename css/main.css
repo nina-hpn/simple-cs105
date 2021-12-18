@@ -152,6 +152,9 @@ html {
     } 
 
 }
+.custom-menu {
+    height: 100vh;
+}
 #sidebar .custom-menu .btn {
     width: 40px;
     height: 40px;
@@ -187,10 +190,15 @@ a[data-toggle="collapse"] {
 }
 
 #side {
+    height: 100vh;
+    overflow: auto;
     z-index: 2;
     position: fixed;
     top: 0px;
+    background-color: rgb(9, 123, 250);
 }
+
+
 
 .d-flex {
     display: -webkit-box !important;
