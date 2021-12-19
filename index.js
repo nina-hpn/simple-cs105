@@ -553,9 +553,22 @@ window.setLoaderGeometry = function(url='./graphics/buffergeometries/suzzane_buf
 var obj_params = {
     color: 0xffffff,
     font: 'Tahoma',
-    size: 80,
-    height: 80,
-    urveSegments: 12,
+    size: 100,
+    height: 100,
+    width: 100,
+    depth: 100,
+    radius: 80,
+    radiusTop: 100,
+    radiusBottom: 100,
+    tube: 25,
+    heightSegments: 20,
+    widthSegments: 20,
+    radialSegments: 20,
+    tubularSegments: 20,
+    segments: 20,
+    detail: 0,
+    size: 100,
+    curveSegments: 20,
     bevelEnabled: true,
     bevelThickness: 0.01,
     bevelSize: 0.01,
@@ -563,6 +576,21 @@ var obj_params = {
     bevelSegments: 1
 }
 const loader = new THREE.FontLoader(); 
+
+var geometry_dict = {
+
+    'box': new THREE.BoxGeometry(80, 20, 20),
+    'sphere': new THREE.SphereGeometry(obj_params['radius'], obj_params['widthSegments'], obj_params['heightSegments']),
+    'cone': new THREE.ConeGeometry(obj_params['radius'], obj_params['height'], obj_params['radialSegments'], obj_params['heightSegments']),
+    'cylinder': new THREE.CylinderGeometry(obj_params['radiusTop'], obj_params['radiusBottom'], obj_params['height'], obj_params['radialSegments']),
+    'torus': new THREE.TorusGeometry(obj_params['width'], obj_params['tube'], obj_params['radialSegments'], obj_params['tubularSegments']),
+    'tea-pot': new TeapotBufferGeometry(obj_params['size'], obj_params['segments']),
+    'icosa': new THREE.IcosahedronGeometry(obj_params['radius'], obj_params['detail']),
+    'dode': new THREE.DodecahedronGeometry(obj_params['radius'], obj_params['detail']),
+    'octa': new THREE.OctahedronGeometry(obj_params['radius'], obj_params['detail']),
+    'tetra': new THREE.TetrahedronGeometry(obj_params['radius'], obj_params['detail']),
+    'circle': new THREE.CircleGeometry(obj_params['radius'], obj_params['segments'])
+}
 
 
 window.renderGeometry= function(id, fontName='Tahoma') {
@@ -579,7 +607,7 @@ window.renderGeometry= function(id, fontName='Tahoma') {
             if(pointMaterial)
                 mesh = new THREE.Points(BoxGeometry, material);
             else
-                mesh = new THREE.Mesh(BoxGeometry, material);
+                mesh = new THREE.Mesh(geometry_dict[id], material);
 			break;
 		case 'sphere':
             if(pointMaterial)
@@ -670,8 +698,6 @@ window.renderGeometry= function(id, fontName='Tahoma') {
                     control_transform(mesh);
                 })
 			break;
-        case 'tree':
-            mesh = new THREE.Mesh(TreeGeometry, material);
 
         default:
             mesh = new THREE.Mesh(BoxGeometry, material);
