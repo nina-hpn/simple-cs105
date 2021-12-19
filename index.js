@@ -551,7 +551,16 @@ window.setLoaderGeometry = function(url='./graphics/buffergeometries/suzzane_buf
 // Define some params control and text loader
 
 var obj_params = {
-    color: 0xffffff
+    color: 0xffffff,
+    font: 'Tahoma',
+    size: 80,
+    height: 80,
+    urveSegments: 12,
+    bevelEnabled: true,
+    bevelThickness: 0.01,
+    bevelSize: 0.01,
+    bevelOffset: 0,
+    bevelSegments: 1
 }
 const loader = new THREE.FontLoader(); 
 
@@ -686,6 +695,14 @@ window.renderGeometry= function(id, fontName='Tahoma') {
             mesh.material.needsUpdate = true;
         });
     objectFolder.add(mesh, 'visible');
+
+    if(id == 'text') {
+        // Let user pick font
+        objectFolder.add(obj_params, 'font', [ 'Tahoma', 'Bell', 'Broadway', 'Constantia', 'Luna', 'Roboto', 'Tahoma'])
+            .onChange(function(value) {
+                renderGeometry('text', value);
+            })
+    }
     if (mesh.geometry.parameters){
         
         if(mesh.geometry.parameters.widthSegments) {
@@ -711,6 +728,7 @@ window.renderGeometry= function(id, fontName='Tahoma') {
             objectFolder.add(mesh.geometry.parameters, 'segments', 1, 50).listen();
         }
     }
+    objectFolder.open();
 
     render();
 }
@@ -1162,3 +1180,5 @@ window.displayAmbient = function() {
 }
 
 animate()
+
+
