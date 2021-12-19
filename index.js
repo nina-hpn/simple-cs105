@@ -666,7 +666,7 @@ window.renderGeometry= function(id, fontName='Tahoma') {
     objectFolder.open();
 
     // Adding controls on material type
-    materialFolder = gui.addFolder('Material');
+    //materialFolder = gui.addFolder('Material');
 
 
     render();
