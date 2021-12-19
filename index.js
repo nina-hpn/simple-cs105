@@ -389,7 +389,23 @@ function createColorAndPositionOfBuffer(setColor=false) {
     }
 }
 
-
+var obj_material = {
+    color: 0xffffff,
+    size: 3,
+    wireframe: false,
+    transparent: false,
+    emissive: 0xffffff,
+    emissiveIntensity: 1,
+    lightMapIntensity: 1,
+    metalness: 0,
+    roughness: 1.0,
+    wireframeLinejoin: 'round',
+    wireframeLinewidth: 1,
+    side: THREE.DoubleSide,
+    vertexColors: true,
+    normalMapType: THREE.TangentSpaceNormalMap,
+    refractionRatio: 0.98
+}
 
 window.setMaterial = function(mat='point', obj='main-obj',color=0xffffff, size=3, wireframe=true, transparent=true) {
     // Getting the current main-obj on screen and setting it with the chosen material 
@@ -407,36 +423,40 @@ window.setMaterial = function(mat='point', obj='main-obj',color=0xffffff, size=3
 
             switch(type_material) {
                 case 'standard':
-                    material = new THREE.MeshStandardMaterial({ color: color, side: THREE.DoubleSide });
-                        pointMaterial = false;
+                    material = new THREE.MeshStandardMaterial({ color: obj_material['color'], side: obj_material['side'] });
+                    pointMaterial = false;
                     break;
                 case 'point':
-                    material = new THREE.PointsMaterial({ size: size, vertexColors: true, side: THREE.DoubleSide, color: color});
+                    material = new THREE.PointsMaterial({ size: obj_material['size'], vertexColors: true, side: obj_material['side'], color: obj_material['color']});
                     pointMaterial = true;
                     break;
 
                 case 'basic':
-                    material = new THREE.MeshBasicMaterial({ color: color, wireframe: wireframe, side: THREE.DoubleSide});
-                        pointMaterial = false;
+                    material = new THREE.MeshBasicMaterial({ color: obj_material['color'], wireframe: true, side: obj_material['side']});
+                    obj_material['wireframe'] = true;
+                    pointMaterial = false;
                     break;
 
                 case 'normal':
-                    material = new THREE.MeshNormalMaterial({ color: color, side: THREE.DoubleSide});
+                    material = new THREE.MeshNormalMaterial({ color: obj_material['color'], side: obj_material['side']});
 
                 case 'phong':
-                    material = new THREE.MeshPhongMaterial({color: color, side: THREE.DoubleSide});
-                        pointMaterial = false;
+                    material = new THREE.MeshPhongMaterial({color: obj_material['color'], side: obj_material['side']});
+                    pointMaterial = false;
                     break;
 
                 case 'lambert':
                     if (!light) 
-                        material = new THREE.MeshBasicMaterial({map: texture,  color: color, side: THREE.DoubleSide });
+                        material = new THREE.MeshBasicMaterial({map: texture,  color: obj_material['color'], side: obj_material['side'] });
                     else
-                        material = new THREE.MeshLambertMaterial({map: texture, color: color, side: THREE.DoubleSide});
-                        pointMaterial = false;
-                        break;
+                        material = new THREE.MeshLambertMaterial({map: texture, color: obj_material['color'], side: obj_material['side']});
+                    pointMaterial = false;
+                    break;
+                case 'metal':
+                    material = new THREE.MeshStandardMaterial({color: obj_material['color'], metalness:1, side: obj_material['side']});
+                    break;
                 default:
-                    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
+                    material = new THREE.MeshPhongMaterial({ color: obj_material['color'], side: obj_material['side'] });
 
             }
 
@@ -536,12 +556,12 @@ window.setLoaderGeometry = function(url='./graphics/buffergeometries/suzzane_buf
             scene.add(mesh);
             control_transform(mesh);
             //Adding GUI for control 
-            objectFolder = gui.addFolder('Object');
+            materialFolder = gui.addFolder('Material');
 
             // Change mesh color
-            objectFolder.addColor( obj_params, 'color')
+            materialFolder.addColor( obj_material, 'color')
                 .onChange(function() {
-                    mesh.material.color.set( new THREE.Color(obj_params.color) );
+                    mesh.material.color.set( new THREE.Color(obj_material.color) );
                     mesh.material.needsUpdate = true;
                 });
             setTimeout(addTexttoHeader('Note that the loaded geometry is a bit too small, you can scale it using S'), 5000);
@@ -565,24 +585,47 @@ window.setLoaderGeometry = function(url='./graphics/buffergeometries/suzzane_buf
 
 const loader = new THREE.FontLoader(); 
 
+function getGeo(id) {
+    switch(id) {
+        case 'box':
+            return new THREE.BoxGeometry(obj_params['width'], obj_params['height'], obj_params['depth'], obj_params['widthSegments'], obj_params['heightSegments'], obj_params['depthSegments'])
+
+        case 'sphere':
+            return new THREE.SphereGeometry(obj_params['radius'], obj_params['widthSegments'], obj_params['heightSegments']);
+        
+        case 'cone':
+            return new THREE.ConeGeometry(obj_params['radius'], obj_params['height'], obj_params['radialSegments'], obj_params['heightSegments']);
+
+        case 'cylinder':
+            return new THREE.CylinderGeometry(obj_params['radiusTop'], obj_params['radiusBottom'], obj_params['height'], obj_params['radialSegments'])
+
+        case 'torus':
+            return new THREE.TorusGeometry(obj_params['width'], obj_params['tube'], obj_params['radialSegments'], obj_params['tubularSegments'])
+
+        case 'tea-pot':
+            return new TeapotBufferGeometry(obj_params['size'], obj_params['segments'])
+        
+        case 'icosa':
+            return new THREE.IcosahedronGeometry(obj_params['radius'], obj_params['detail'])
+
+        case 'dode':
+            return new THREE.DodecahedronGeometry(obj_params['radius'], obj_params['detail'])
+        
+        case 'octa':
+            return new THREE.OctahedronGeometry(obj_params['radius'], obj_params['detail'])
+
+        case 'tetra':
+            return new THREE.TetrahedronGeometry(obj_params['radius'], obj_params['detail'])
+
+        case 'circle':
+            return new THREE.CircleGeometry(obj_params['radius'], obj_params['segments'])
+    }
+}
+
 
 var mesh_geometry;
 window.renderGeometry= function(id, fontName='Tahoma') {
     // Setting the main-obj geometry
-    var geometry_dict = {
-
-        'box': new THREE.BoxGeometry(obj_params['width'], obj_params['height'], obj_params['depth'], obj_params['widthSegments'], obj_params['heightSegments'], obj_params['depthSegments']),
-        'sphere': new THREE.SphereGeometry(obj_params['radius'], obj_params['widthSegments'], obj_params['heightSegments']),
-        'cone': new THREE.ConeGeometry(obj_params['radius'], obj_params['height'], obj_params['radialSegments'], obj_params['heightSegments']),
-        'cylinder': new THREE.CylinderGeometry(obj_params['radiusTop'], obj_params['radiusBottom'], obj_params['height'], obj_params['radialSegments']),
-        'torus': new THREE.TorusGeometry(obj_params['width'], obj_params['tube'], obj_params['radialSegments'], obj_params['tubularSegments']),
-        'tea-pot': new TeapotBufferGeometry(obj_params['size'], obj_params['segments']),
-        'icosa': new THREE.IcosahedronGeometry(obj_params['radius'], obj_params['detail']),
-        'dode': new THREE.DodecahedronGeometry(obj_params['radius'], obj_params['detail']),
-        'octa': new THREE.OctahedronGeometry(obj_params['radius'], obj_params['detail']),
-        'tetra': new THREE.TetrahedronGeometry(obj_params['radius'], obj_params['detail']),
-        'circle': new THREE.CircleGeometry(obj_params['radius'], obj_params['segments'])
-    }
 
     mesh = scene.getObjectByName('main-obj');
     scene.remove(mesh);
@@ -591,7 +634,7 @@ window.renderGeometry= function(id, fontName='Tahoma') {
     }
     
     if (id != 'text') {
-        mesh_geometry = geometry_dict[id];
+        mesh_geometry = getGeo(id);
         console.log(mesh_geometry.parameters)
         mesh_geometry.name = id;
         if(pointMaterial) 
@@ -640,11 +683,6 @@ window.renderGeometry= function(id, fontName='Tahoma') {
     objectFolder = gui.addFolder('Object');
 
     // Change mesh color
-    objectFolder.addColor( obj_params, 'color')
-        .onChange(function() {
-            mesh.material.color.set( new THREE.Color(obj_params.color) );
-            mesh.material.needsUpdate = true;
-        });
     
     if(id == 'text') {
         // Let user pick font
@@ -667,8 +705,39 @@ window.renderGeometry= function(id, fontName='Tahoma') {
     objectFolder.open();
 
     // Adding controls on material type
-    //materialFolder = gui.addFolder('Material');
-
+    materialFolder = gui.addFolder('Material');
+    materialFolder.addColor( obj_material, 'color')
+        .onChange(function() {
+            mesh.material.color.set( new THREE.Color(obj_material.color) );
+            mesh.material.needsUpdate = true;
+        });
+    materialFolder.add( obj_material, 'metalness', 0, 1.0)
+        .onChange(function(value) {
+            material.metalness = value;
+            mesh.material.metalness = value;
+            mesh.material.needsUpdate=true;
+        })
+    materialFolder.add( obj_material, 'roughness', 0, 1.0)
+    .onChange(function(value) {
+        material.roughness = value;
+        mesh.material.roughness = value;
+        mesh.material.needsUpdate=true;
+    })
+    materialFolder.add( obj_material, 'wireframe')
+        .onChange(function(value) {
+            material.wireframe = value;
+            mesh.material.wireframe = value;
+            mesh.material.needsUpdate = true;
+        });
+    materialFolder.add( obj_material, 'refractionRatio', 0, 1.0)
+        .onChange(function(value) {
+            material.refractionRatio = value;
+            mesh.material.refractionRatio = value;
+            mesh.material.needsUpdate = true;
+ 
+        });
+    
+    materialFolder.open();
 
     render();
 }
@@ -953,11 +1022,7 @@ function createPointLight(color=0xffffff, intensity=2, name='light') {
     var light = new THREE.PointLight(new THREE.Color(color), intensity);
     light.castShadow = true;
 	light.position.set(0, 250, 0);
-    light.shadow.mapSize.width = 512; // default
-    light.shadow.mapSize.height = 512; // default
-    light.shadow.camera.near = 0.5; // default
-    light.shadow.camera.far = 500; // default
-    light.shadow.focus = 1; // default
+
     light.name = name;
 
     return light
@@ -1043,11 +1108,7 @@ function createSpotLight(color=0xffffff, intensity=2, decay=1, name='light') {
     light.castShadow = true;
     light.position.set(0, 250, 0);
     light.name = name;
-    light.shadow.mapSize.width = 512; // default
-    light.shadow.mapSize.height = 512; // default
-    light.shadow.camera.near = 0.5; // default
-    light.shadow.camera.far = 500; // default
-    light.shadow.focus = 1; // default
+
     return light;
 }
 
