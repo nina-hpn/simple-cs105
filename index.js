@@ -199,7 +199,7 @@ function createScene() {
     var scene = new THREE.Scene();
     scene.name = 'scene';
     scene.autoUpdate = true;
-    scene.background = new THREE.Color('black');
+    scene.background = new THREE.Color(0x11010);
     return scene;
 }
 
@@ -308,7 +308,7 @@ window.removeGeometry = function(name='all') {
                 gui.removeFolder(value);
             }
         }
-        scene.background = new THREE.Color('black');
+        scene.background = new THREE.Color(0x11010);
         material = defaultMaterial;
         planeMaterial = defaultMaterial;
         addTexttoHeader('Done reset scene', 'auxiliary');
