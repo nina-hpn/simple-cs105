@@ -32,14 +32,41 @@ material.needsUpdate = true;
 //Define gui and controls elements
 //Basic params for TextGeometry
 
-let size= 80,
-height= 80,
-curveSegments= 12,
-bevelEnabled= true,
-bevelThickness= 0.01,
-bevelSize= 0.01,
-bevelOffset= 0,
-bevelSegments= 1;
+
+var obj_params = {
+    color: 0xffffff,
+    font: 'Tahoma',
+    size: 100,
+    height: 100,
+    width: 100,
+    depth: 100,
+    radius: 80,
+    radiusTop: 100,
+    radiusBottom: 100,
+    tube: 25,
+    heightSegments: 20,
+    widthSegments: 20,
+    depthSegments: 20,
+    radialSegments: 20,
+    tubularSegments: 20,
+    segments: 20,
+    detail: 0,
+    size: 100,
+    curveSegments: 20,
+    bevelEnabled: true,
+    bevelThickness: 0.01,
+    bevelSize: 0.01,
+    bevelOffset: 0,
+    bevelSegments: 1,
+    phiStart: 0,
+    phiLength: 0,
+    thetaStart: 0,
+    thetaEnd: 0,
+    thetaLength: 0,
+    openEnded: 0,
+    arc: 20,
+    
+}
 
 const dic = {
     'Bell': '../../fonts/Bell MT_Regular.json',
@@ -56,12 +83,10 @@ var positions = [], colors = [];
 
 
 const gui = new GUI( { autoPlace: false } );
-var minMaxGUIHelper;
 var control, orbit, gridHelper;
 var mouse = new THREE.Vector2();
 
-var planeFolder, objectFolder, AMBLightFolder, PLightFolder, cameraFolder, SLightFolder;
-var widSeg, heiSeg, depSeg, radSeg, tubSeg, seg, detail;
+var planeFolder, objectFolder, AMBLightFolder, PLightFolder, cameraFolder, SLightFolder, materialFolder;
 
 //All about the lights
 var raycaster, PointLightHelper, meshPlane, light, ambientLight, SpotLightHelper;
@@ -77,20 +102,8 @@ document.body.appendChild( stats.dom );
 
 var type_material;
 
-
-var BoxGeometry = new THREE.BoxGeometry(100, 100, 100, 20, 20, 20);
-var SphereGeometry = new THREE.SphereGeometry(100, 20, 20);
-var ConeGeometry = new THREE.ConeGeometry(80, 100, 32, 20);
-var CylinderGeometry = new THREE.CylinderGeometry(100, 100, 20, 20, 5);
-var TorusGeometry = new THREE.TorusGeometry(100, 25, 20, 20);
-var TeapotGeometry = new TeapotBufferGeometry(100, 20);
-var DodecahedronGeometry = new THREE.DodecahedronGeometry(100);
-var IcosahedronGeometry = new THREE.IcosahedronGeometry(100);
-var OctahedronGeometry =  new THREE.OctahedronGeometry(100);
-var TetrahedronGeometry = new THREE.TetrahedronGeometry(100);
-var PlaneGeometry = new THREE.PlaneGeometry(2000, 2000);
-var CircleGeometry = new THREE.CircleGeometry(100,150);
 var TextGeometry, BufferGeometry;
+var PlaneGeometry = new THREE.PlaneGeometry(2000, 2000);
 
 
 init();
@@ -379,7 +392,6 @@ function createColorAndPositionOfBuffer(setColor=false) {
 
 window.setMaterial = function(mat='point', obj='main-obj',color=0xffffff, size=3, wireframe=true, transparent=true) {
     // Getting the current main-obj on screen and setting it with the chosen material 
-
     type_material = mat;
     light = scene.getObjectByName('light');
     color = new THREE.Color(color);
@@ -550,167 +562,79 @@ window.setLoaderGeometry = function(url='./graphics/buffergeometries/suzzane_buf
 
 // Define some params control and text loader
 
-var obj_params = {
-    color: 0xffffff,
-    font: 'Tahoma',
-    size: 100,
-    height: 100,
-    width: 100,
-    depth: 100,
-    radius: 80,
-    radiusTop: 100,
-    radiusBottom: 100,
-    tube: 25,
-    heightSegments: 20,
-    widthSegments: 20,
-    radialSegments: 20,
-    tubularSegments: 20,
-    segments: 20,
-    detail: 0,
-    size: 100,
-    curveSegments: 20,
-    bevelEnabled: true,
-    bevelThickness: 0.01,
-    bevelSize: 0.01,
-    bevelOffset: 0,
-    bevelSegments: 1
-}
 const loader = new THREE.FontLoader(); 
 
-var geometry_dict = {
 
-    'box': new THREE.BoxGeometry(80, 20, 20),
-    'sphere': new THREE.SphereGeometry(obj_params['radius'], obj_params['widthSegments'], obj_params['heightSegments']),
-    'cone': new THREE.ConeGeometry(obj_params['radius'], obj_params['height'], obj_params['radialSegments'], obj_params['heightSegments']),
-    'cylinder': new THREE.CylinderGeometry(obj_params['radiusTop'], obj_params['radiusBottom'], obj_params['height'], obj_params['radialSegments']),
-    'torus': new THREE.TorusGeometry(obj_params['width'], obj_params['tube'], obj_params['radialSegments'], obj_params['tubularSegments']),
-    'tea-pot': new TeapotBufferGeometry(obj_params['size'], obj_params['segments']),
-    'icosa': new THREE.IcosahedronGeometry(obj_params['radius'], obj_params['detail']),
-    'dode': new THREE.DodecahedronGeometry(obj_params['radius'], obj_params['detail']),
-    'octa': new THREE.OctahedronGeometry(obj_params['radius'], obj_params['detail']),
-    'tetra': new THREE.TetrahedronGeometry(obj_params['radius'], obj_params['detail']),
-    'circle': new THREE.CircleGeometry(obj_params['radius'], obj_params['segments'])
-}
-
-
+var mesh_geometry;
 window.renderGeometry= function(id, fontName='Tahoma') {
     // Setting the main-obj geometry
+    var geometry_dict = {
+
+        'box': new THREE.BoxGeometry(obj_params['width'], obj_params['height'], obj_params['depth'], obj_params['widthSegments'], obj_params['heightSegments'], obj_params['depthSegments']),
+        'sphere': new THREE.SphereGeometry(obj_params['radius'], obj_params['widthSegments'], obj_params['heightSegments']),
+        'cone': new THREE.ConeGeometry(obj_params['radius'], obj_params['height'], obj_params['radialSegments'], obj_params['heightSegments']),
+        'cylinder': new THREE.CylinderGeometry(obj_params['radiusTop'], obj_params['radiusBottom'], obj_params['height'], obj_params['radialSegments']),
+        'torus': new THREE.TorusGeometry(obj_params['width'], obj_params['tube'], obj_params['radialSegments'], obj_params['tubularSegments']),
+        'tea-pot': new TeapotBufferGeometry(obj_params['size'], obj_params['segments']),
+        'icosa': new THREE.IcosahedronGeometry(obj_params['radius'], obj_params['detail']),
+        'dode': new THREE.DodecahedronGeometry(obj_params['radius'], obj_params['detail']),
+        'octa': new THREE.OctahedronGeometry(obj_params['radius'], obj_params['detail']),
+        'tetra': new THREE.TetrahedronGeometry(obj_params['radius'], obj_params['detail']),
+        'circle': new THREE.CircleGeometry(obj_params['radius'], obj_params['segments'])
+    }
 
     mesh = scene.getObjectByName('main-obj');
     scene.remove(mesh);
     if(mesh) {
         gui.removeFolder(objectFolder);
     }
-    //console.log(material);
-    switch(id) {
-        case 'box':  
-            if(pointMaterial)
-                mesh = new THREE.Points(BoxGeometry, material);
-            else
-                mesh = new THREE.Mesh(geometry_dict[id], material);
-			break;
-		case 'sphere':
-            if(pointMaterial)
-                mesh = new THREE.Points(SphereGeometry, material);
-			else 
-                mesh = new THREE.Mesh(SphereGeometry, material);
-			break;
-		case 'cone':
-            if(pointMaterial)
-                mesh = new THREE.Points(ConeGeometry, material);
-			else
-                mesh = new THREE.Mesh(ConeGeometry, material);
-			break;
-		case 'cylinder':
-            if(pointMaterial)
-                mesh = new THREE.Points(CylinderGeometry, material);
-			else
-                mesh = new THREE.Mesh(CylinderGeometry, material);
-			break;
-		case 'torus':
-            if(pointMaterial)
-                mesh = new THREE.Points(TorusGeometry, material);
-			else
-                mesh = new THREE.Mesh(TorusGeometry, material);
-			break;
-		case 'tea-pot':
-            if(pointMaterial)
-                mesh = new THREE.Points(TeapotGeometry, material);
-			else
-                mesh = new THREE.Mesh(TeapotGeometry, material);
-			break;
-		case 'icosa':
-            if(pointMaterial)
-                mesh = new THREE.Points(IcosahedronGeometry, material);
-            else
-			    mesh = new THREE.Mesh(IcosahedronGeometry, material);
-			break;
-		case 'dode':
-            if(pointMaterial)
-                mesh = new THREE.Points(DodecahedronGeometry, material);
-			
-            else
-                mesh = new THREE.Mesh(DodecahedronGeometry, material);
-			break;
-		case 'octa':
-            if(pointMaterial)
-                mesh = new THREE.Points(OctahedronGeometry, material);
-            else
-			    mesh = new THREE.Mesh(OctahedronGeometry, material);
-			break;
-		case 'tetra':
-            if(pointMaterial)
-                mesh = new THREE.Points(TetrahedronGeometry, material);
-            else
-			    mesh = new THREE.Mesh(TetrahedronGeometry, material);
-			break;
-        case 'circle':
-            if(pointMaterial)
-                mesh = new THREE.Points(CircleGeometry, material);
-            else
-                mesh = new THREE.Mesh(CircleGeometry, material);
-			break;
-        case 'text':
-            var text = document.getElementById('insertedText').value;
-            loader.load( dic[fontName], 
-                function(font) {
-                    var geometry = 	new THREE.TextGeometry(text, {
-                        font: font,
-                        size: size,
-                        height: height,
-                        curveSegments: curveSegments,
-                
-                        bevelThickness: bevelThickness,
-                        bevelSize: bevelSize,
-                        bevelEnabled: bevelEnabled,
-                        bevelOffset: bevelOffset,
-                        bevelSegments: bevelSegments
-                    })
-                    geometry.computeBoundingBox();
-                    if(pointMaterial)
-                        mesh = new THREE.Points(geometry, material);
-                    else
-                        mesh = new THREE.Mesh(geometry, material);
-                    mesh.name = 'main-obj';
-                    mesh.castShadow = true;
-                    mesh.receiveShadow = true;
-                    scene.add(mesh);
-                    control_transform(mesh);
-                })
-			break;
-
-        default:
-            mesh = new THREE.Mesh(BoxGeometry, material);
-            break;
-    }
     
-    if(id != 'text') {
+    if (id != 'text') {
+        mesh_geometry = geometry_dict[id];
+        console.log(mesh_geometry.parameters)
+        mesh_geometry.name = id;
+        if(pointMaterial) 
+            mesh = new THREE.Points(mesh_geometry, material);
+        else    
+            mesh = new THREE.Mesh(mesh_geometry, material);
+
         scene.add(mesh);
         mesh.name = 'main-obj';
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         control_transform(mesh);
     }
+    else {
+        var text = document.getElementById('insertedText').value;
+        loader.load( dic[fontName], 
+            function(font) {
+                mesh_geometry = new THREE.TextGeometry(text, {
+                    font: font,
+                    size: obj_params['size'],
+                    height: obj_params['height'],
+                    curveSegments: obj_params['curveSegments'],
+            
+                    bevelThickness: obj_params['bevelThickness'],
+                    bevelSize: obj_params['bevelSize'],
+                    bevelEnabled: obj_params['bevelEnabled'],
+                    bevelOffset: obj_params['bevelOffset'],
+                    bevelSegments: obj_params['bevelSegments']
+                })
+                mesh_geometry.name = id;
+                mesh_geometry.computeBoundingBox();
+                if(pointMaterial)
+                    mesh = new THREE.Points(mesh_geometry, material);
+                else
+                    mesh = new THREE.Mesh(mesh_geometry, material);
+                mesh.name = 'main-obj';
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                scene.add(mesh);
+                control_transform(mesh);
+            })
+    }
+    
+
     //Adding GUI for control 
     objectFolder = gui.addFolder('Object');
 
@@ -720,41 +644,30 @@ window.renderGeometry= function(id, fontName='Tahoma') {
             mesh.material.color.set( new THREE.Color(obj_params.color) );
             mesh.material.needsUpdate = true;
         });
-    objectFolder.add(mesh, 'visible');
-
+    
     if(id == 'text') {
         // Let user pick font
         objectFolder.add(obj_params, 'font', [ 'Tahoma', 'Bell', 'Broadway', 'Constantia', 'Luna', 'Roboto', 'Tahoma'])
             .onChange(function(value) {
                 renderGeometry('text', value);
-            })
-    }
-    if (mesh.geometry.parameters){
-        
-        if(mesh.geometry.parameters.widthSegments) {
-            objectFolder.add(mesh.geometry.parameters, 'widthSegments', 1, 50)
-            .listen()
-            .onChange(function(value) {
-                console.log(value)
             });
-        }
-        if(mesh.geometry.parameters.heightSegments) {
-            objectFolder.add(mesh.geometry.parameters, 'heightSegments', 1, 50).listen();
-        }
-        if(mesh.geometry.parameters.depthSegments) {
-            objectFolder.add(mesh.geometry.parameters, 'depthSegments', 1, 50).listen();
-        }
-        if(mesh.geometry.parameters.radialSegments) {
-            objectFolder.add(mesh.geometry.parameters, 'radialSegments', 1, 50).listen();
-        }
-        if(mesh.geometry.parameters.tubularSegments) {
-            objectFolder.add(mesh.geometry.parameters, 'tubularSegments', 1, 50).listen();
-        }
-        if(mesh.geometry.parameters.segments) {
-            objectFolder.add(mesh.geometry.parameters, 'segments', 1, 50).listen();
+    }
+    else {
+        objectFolder.add(mesh, 'visible');
+        if (mesh.geometry.parameters){
+            for(let i of Object.keys(mesh.geometry.parameters)) {
+                objectFolder.add(obj_params, i)
+                    .onChange(function(value) {
+                        renderGeometry(mesh_geometry.name)
+                    })
+            }
         }
     }
     objectFolder.open();
+
+    // Adding controls on material type
+    materialFolder = gui.addFolder('Material');
+
 
     render();
 }
