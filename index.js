@@ -199,6 +199,7 @@ function createScene() {
     var scene = new THREE.Scene();
     scene.name = 'scene';
     scene.autoUpdate = true;
+    scene.background = new THREE.Color('black');
     return scene;
 }
 
@@ -256,7 +257,7 @@ function createRenderer() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.setClearColor(new THREE.Color(0xa9a9a9), 0)
+
     return renderer;
 }
 

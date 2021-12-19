@@ -291,6 +291,7 @@ li a:hover{
     background-color: rgb(31, 68, 233);
     font-family: 'Raleway', sans-serif;
     font-weight: bold;
+    color: white;
 }
 
 .helper-gui {
