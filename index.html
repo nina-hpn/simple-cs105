@@ -35,7 +35,7 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/giojs@2.2.1/build/gio.min.js"></script>
         
-    
+        <script type='module' src="https://cdn.jsdelivr.net/npm/three@0.117.1/examples/jsm/loaders/EXRLoader.js"></script>
     </head>
     
     <body>
@@ -145,13 +145,10 @@
                                     <a href="#" onclick="setMaterial('point');">Point</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="setMaterial('basic');">Wireframe</a>
+                                    <a href="#" onclick="setMaterial('wireframe');">Wireframe</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="setMaterial('phong');">Solid</a>
-                                </li>
-                                <li>
-                                    <a href="#" onclick="setMaterial('metal');">Metal</a>
+                                    <a href="#" onclick="setMaterial('basic');">Solid</a>
                                 </li>
                                 <li>
                                     <a href="#" onClick='uploadImage("texture-obj");'>Special Texture</a>     
@@ -240,5 +237,6 @@
                 </div>
             </nav>
         </div>
+        <input id='metalTexture' type='file' style="visibility:hidden"/>
     </body>
 </html>

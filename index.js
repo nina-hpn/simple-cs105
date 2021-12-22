@@ -6,7 +6,8 @@ import * as THREE from './scripts/libs/three.module.js'
 import { OrbitControls } from './scripts/libs/OrbitControls.js';
 import Stats from './scripts/libs/stats.module.js';
 import { MinMaxGUIHelper } from './scripts/libs/helper.js';
-
+import { OBJLoader } from './scripts/libs/OBJLoader.js';
+import { EXRLoader } from "https://threejs.org/examples/jsm/loaders/EXRLoader.js";
 
 var canvas = document.getElementById('webgl');
 var controller = new GIO.Controller( canvas );
@@ -26,6 +27,22 @@ var specialMaterial, preMaterial = false, isBuffer = false;
 var backgroundTexture;
 var planeMaterial;
 var time = 0, delta = 0;
+var metalColor = new THREE.Color('#BBA14F');
+var setMetalColor = false;
+var envMap =  new EXRLoader()
+    .setDataType(THREE.UnsignedByteType)
+    .load(
+        "https://threejs.org/examples/textures/piz_compressed.exr",
+        function (texture) {
+            exrCubeRenderTarget = pmremGenerator.fromEquirectangular(texture);
+            exrBackground = exrCubeRenderTarget.texture;
+            newEnvMap = exrCubeRenderTarget ? exrCubeRenderTarget.texture : null;
+
+            loadObjectAndAndEnvMap(); // Add envmap once the texture has been loaded
+
+            texture.dispose();
+        }
+    );
 
 material.needsUpdate = true;
 
@@ -404,7 +421,8 @@ var obj_material = {
     side: THREE.DoubleSide,
     vertexColors: true,
     normalMapType: THREE.TangentSpaceNormalMap,
-    refractionRatio: 0.98
+    refractionRatio: 0.98,
+    metalTexture: 'rose gold'
 }
 
 window.setMaterial = function(mat='point', obj='main-obj',color=0xffffff, size=3, wireframe=true, transparent=true) {
@@ -431,8 +449,8 @@ window.setMaterial = function(mat='point', obj='main-obj',color=0xffffff, size=3
                     pointMaterial = true;
                     break;
 
-                case 'basic':
-                    material = new THREE.MeshBasicMaterial({ color: obj_material['color'], wireframe: true, side: obj_material['side']});
+                case 'wireframe':
+                    material = new THREE.MeshStandardMaterial({ color: obj_material['color'], wireframe: true, side: obj_material['side']});
                     obj_material['wireframe'] = true;
                     pointMaterial = false;
                     break;
@@ -444,6 +462,10 @@ window.setMaterial = function(mat='point', obj='main-obj',color=0xffffff, size=3
                     material = new THREE.MeshPhongMaterial({color: obj_material['color'], side: obj_material['side']});
                     pointMaterial = false;
                     break;
+                case 'basic':
+                    material = new THREE.MeshBasicMaterial({ color: obj_material['color'], side: obj_material['side']});
+                    pointMaterial = false;
+                    break;
 
                 case 'lambert':
                     if (!light) 
@@ -453,7 +475,18 @@ window.setMaterial = function(mat='point', obj='main-obj',color=0xffffff, size=3
                     pointMaterial = false;
                     break;
                 case 'metal':
-                    material = new THREE.MeshStandardMaterial({color: obj_material['color'], metalness:1, side: obj_material['side']});
+                    if(!setMetalColor) {
+                        material = new THREE.MeshPhysicalMaterial({color: obj_material['color'], roughness:0 ,metalness:1, side: obj_material['side']});
+                    }
+                    else {
+                        material = new THREE.MeshPhysicalMaterial({color: metalColor, roughness:0 ,metalness:1, side: obj_material['side']});
+                        setMetalColor = false;
+                    }
+                        
+                    material.metalnessMap = texture;
+                    material.roughnessMap = texture;
+                    material.envMap = envMap;
+                    material.envMapIntensity = 1;
                     break;
                 default:
                     material = new THREE.MeshPhongMaterial({ color: obj_material['color'], side: obj_material['side'] });
@@ -496,14 +529,20 @@ window.uploadImage = function(id='texture-obj') {
     document.getElementById(id).click();
 }
 
-window.setTexture = function(url='./graphics/textures/wood-walnut.jpg', obj='main-obj') {
+window.setTexture = function(url='./graphics/textures/wood-walnut.jpg', obj='main-obj', isMetal=false) {
     mesh = scene.getObjectByName('main-obj');
     meshPlane = scene.getObjectByName('plane');
     if(obj == 'main-obj') {  
         if(mesh) {
             texture = new THREE.TextureLoader().load(url, render);
+            console.log(texture)
             texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-            setMaterial('lambert');
+            if(!isMetal) {
+                setMaterial('lambert');
+            }
+            else {
+                setMaterial('metal')
+            }
         }
     }
     if(obj == 'plane') {
@@ -622,7 +661,11 @@ function getGeo(id) {
     }
 }
 
-
+var metalTextureDic = {
+    "rose gold": ['./graphics/textures/rose_gold.jpg', '#E0BFB8'],
+    "alu": ['./graphics/textures/alu.jpg', '#D0D5DB'],
+    "gold": ['./graphics/textures/gold.jpg', '#BBA14F'],
+}
 var mesh_geometry;
 window.renderGeometry= function(id, fontName='Tahoma') {
     // Setting the main-obj geometry
@@ -705,6 +748,9 @@ window.renderGeometry= function(id, fontName='Tahoma') {
     objectFolder.open();
 
     // Adding controls on material type
+    if(materialFolder) {
+        gui.removeFolder(materialFolder);
+    }
     materialFolder = gui.addFolder('Material');
     materialFolder.addColor( obj_material, 'color')
         .onChange(function() {
@@ -736,6 +782,19 @@ window.renderGeometry= function(id, fontName='Tahoma') {
             mesh.material.needsUpdate = true;
  
         });
+    materialFolder.add( obj_material, 'metalTexture', [ 'rose gold', 'gold', 'alu' ])
+        .onChange(function(value) {
+            var url = metalTextureDic[value][0];
+            metalColor = metalTextureDic[value][1];
+            setMetalColor = true;
+            setTexture(url, 'main-obj', true);
+        })
+
+    materialFolder.add(material, 'flatShading')
+        .onChange(function(value) {
+            mesh.material.flatShading = value;
+            mesh.material.needsUpdate = true;
+        })
     
     materialFolder.open();
 
@@ -985,6 +1044,7 @@ window.removeAnimation = function(id='all') {
         document.getElementById('amplitude').style = "display:none";
         document.getElementById('outAmplitude').style = "display:none"
         document.getElementById('label_amplitude').style = "display:none"
+        mesh.position.set(0,0,0);
     }
     else if (mesh && id != 'all') {
         // Here the id is what we want to keep
